@@ -2,7 +2,7 @@
 
 A containerised, API-first authentication framework that small businesses can attach to existing (including legacy) systems without rebuilding their codebase. Managed and monitored via a mobile app.
 
-Built for **ITDMA3-22 — Research Design and Methodology** (Eduvos).
+Built for our third year capstone project (Eduvos).
 
 ## The Problem
 
