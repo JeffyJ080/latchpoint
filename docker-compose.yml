@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: latchpoint-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - latchpoint-net
+
+  auth-core:
+    build:
+      context: ./auth-core
+    container_name: latchpoint-auth-core
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRY_MINUTES: ${JWT_EXPIRY_MINUTES}
+      SESSION_TIMEOUT_MINUTES: ${SESSION_TIMEOUT_MINUTES}
+    ports:
+      - "8080:8080"
+    networks:
+      - latchpoint-net
+
+  adapter-layer:
+    build:
+      context: ./adapter-layer
+    container_name: latchpoint-adapter-layer
+    restart: unless-stopped
+    depends_on:
+      - auth-core
+    environment:
+      AUTH_CORE_BASE_URL: http://auth-core:8080
+    ports:
+      - "8081:8081"
+    networks:
+      - latchpoint-net
+
+networks:
+  latchpoint-net:
+    driver: bridge
+
+volumes:
+  mysql-data:
