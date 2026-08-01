@@ -19,11 +19,11 @@ Latchpoint is a standalone authentication service that businesses attach to thei
 ## Architecture
 
 ```
-┌─────────────────┐         ┌──────────────────┐         ┌──────────────┐
-│  Legacy System   │ ──────▶ │  Adapter Layer     │ ──────▶ │  Auth Core   │
-│ (any language)   │  REST   │  (translates       │  REST   │ (auth logic, │
-│                   │         │   legacy calls)    │         │  MFA,        │
-└─────────────────┘         └──────────────────┘         │  sessions)   │
+┌─────────────────┐         ┌──────────────────┐              ┌──────────────┐
+│  Legacy System  │ ─────▶ │  Adapter Layer    │ ────────▶   │  Auth Core   │
+│ (any language)  │  REST   │  (translates     │     REST     │ (auth logic, │
+│                 │         │   legacy calls)  │              │  MFA,        │
+└─────────────────┘         └──────────────────┘              │  sessions)   │
                                                               └──────┬───────┘
                                                                      │
                                                               Management API
