@@ -95,7 +95,6 @@ This project supports research into secure authentication for small business web
 - Christiaan Coetzee
 - Boikanyo Setati
 - Kutlwano Mabalane
-- Phathutshedzo Ramudzuli
 
 ## License
 
