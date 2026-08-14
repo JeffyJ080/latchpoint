@@ -48,7 +48,7 @@ Keep the summary under ~60 characters. Add detail in the commit body if needed, 
 | `auth-core` | Person A, Person B |
 | `adapter-layer` | Person C |
 | `docker-compose.yml` / Docker setup | Person C |
-| `mobile-app` | Person D, Person C |
+| `mobile-app` | Person D |
 
 If you're touching someone else's area, ping them first — not a hard rule, just avoids stepping on toes mid-build.
 
