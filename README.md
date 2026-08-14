@@ -2,7 +2,7 @@
 
 A containerised, API-first authentication framework that small businesses can attach to existing (including legacy) systems without rebuilding their codebase. Managed and monitored via a mobile app.
 
-Built for our third year capstone project (Eduvos).
+Final year capstone project (Eduvos).
 
 ## The Problem
 
@@ -18,20 +18,11 @@ Latchpoint is a standalone authentication service that businesses attach to thei
 
 ## Architecture
 
-```
-┌─────────────────┐         ┌──────────────────┐              ┌──────────────┐
-│  Legacy System  │ ─────▶ │  Adapter Layer    │ ────────▶   │  Auth Core   │
-│ (any language)  │  REST   │  (translates     │     REST     │ (auth logic, │
-│                 │         │   legacy calls)  │              │  MFA,        │
-└─────────────────┘         └──────────────────┘              │  sessions)   │
-                                                              └──────┬───────┘
-                                                                     │
-                                                              Management API
-                                                                     │
-                                                              ┌──────▼───────┐
-                                                              │  Mobile App  │
-                                                              │ (Android)    │
-                                                              └──────────────┘
+```mermaid
+flowchart LR
+    A["Legacy System<br/>(any language)"] -- REST --> B["Adapter Layer<br/>(translates legacy calls)"]
+    B -- REST --> C["Auth Core<br/>(auth logic, MFA, sessions)"]
+    C -- Management API --> D["Mobile App<br/>(React Native)"]
 ```
 
 - **`auth-core`** — the authentication service. Handles credential verification, MFA, session management, and password policy enforcement. Exposes a REST API.
@@ -47,7 +38,7 @@ Latchpoint is a standalone authentication service that businesses attach to thei
 | Database | MySQL |
 | MFA | TOTP library (e.g. `java-totp` / Google Authenticator-compatible) |
 | Adapter Layer | Java (Spring Boot) |
-| Mobile App | React Native *(pending final team confirmation)* |
+| Mobile App | React Native |
 | Deployment | Docker, Docker Compose |
 
 ## Deployment Model

@@ -6,7 +6,7 @@ Reference doc so nobody has to dig through chat history to remember what was dec
 
 ## What This Project Is
 
-**Module:** ITDMA3-22 — Research Design and Methodology (Eduvos)
+**Type:** Final year capstone project (Eduvos)
 **Team:** Neo Brian Bampoe, Christiaan Coetzee, Boikanyo Setati, Kutlwano Mabalane, Phathutshedzo Ramudzuli
 
 A containerised, API-first authentication framework that small businesses can attach to existing (including legacy) systems without rebuilding their codebase. Managed and monitored via a mobile app.
@@ -68,7 +68,7 @@ Positioned/marketed as "SaaS-style" (buy it, attach it, don't build it) but tech
 | Database | MySQL | Confirmed |
 | MFA | TOTP library | Confirmed — use existing library, don't hand-roll |
 | Adapter Layer | Java (Spring Boot) | Confirmed |
-| Mobile App | React Native | **Leaning yes — final team decision expected Monday.** Native Android (Java) was the fallback if not. |
+| Mobile App | React Native | Confirmed — team vote |
 | Deployment | Docker, Docker Compose | Confirmed |
 
 ## Repo Setup (done)
@@ -109,5 +109,5 @@ Mobile app mockups being built in **Claude Design**. Screens: Dashboard, Event L
 
 ## Future Work (for report's recommendations section)
 
-- Cross-platform expansion beyond current mobile choice (if native Android was chosen, React Native/Flutter as future work; if React Native chosen now, note native performance tuning as future work)
+- Native Android/iOS builds beyond the current React Native app, for native-level performance tuning
 - Optional security modules beyond authentication (network, endpoint, access control) as expansion path
