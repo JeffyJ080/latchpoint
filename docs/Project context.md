@@ -7,13 +7,13 @@ Reference doc so nobody has to dig through chat history to remember what was dec
 ## What This Project Is
 
 **Type:** Final year capstone project (Eduvos)
-**Team:** Neo Brian Bampoe, Christiaan Coetzee, Boikanyo Setati, Kutlwano Mabalane, Phathutshedzo Ramudzuli
+**Team:** Neo Brian Bampoe, Christiaan Coetzee, Boikanyo Setati, Kutlwano Mabalane
 
 A containerised, API-first authentication framework that small businesses can attach to existing (including legacy) systems without rebuilding their codebase. Managed and monitored via a mobile app.
 
 **Original proposal title:** "Implementing Secure Authentication Systems for Small Business Web Applications"
 
-## Scope Evolution (important — don't cite the original PDF's RQs as-is)
+## Scope Evolution
 
 The original submitted proposal described a **web application prototype**, with no mobile app, no Docker, no legacy system integration. After lecturer feedback, the project pivoted to:
 - Delivery as a **mobile-managed** framework (not a plain web app)
@@ -33,7 +33,7 @@ The research questions and objectives were rewritten to reflect this — see "Up
 5. How effectively does exposing a REST API and using containerisation (Docker) address integration and deployment challenges when attaching an authentication framework to legacy small-business systems written in different languages?
 6. How effective are the implemented security measures in protecting against real-world attacks, and what recommendations can be made for small businesses with limited technical resources?
 
-**Objective 3 (updated):** To design and implement a secure authentication framework — exposed via a REST API for cross-language compatibility and deployed via Docker — with a mobile management interface for monitoring and configuration.
+**Objective 3:** To design and implement a secure authentication framework — exposed via a REST API for cross-language compatibility and deployed via Docker — with a mobile management interface for monitoring and configuration.
 
 ## Key Technical Decision: Two Separate Problems
 
@@ -80,7 +80,7 @@ Positioned/marketed as "SaaS-style" (buy it, attach it, don't build it) but tech
 - `docs/api-contract.md` — draft REST API spec (Auth endpoints + Management endpoints). **Has 3 open questions team needs to resolve:** admin auth for management endpoints, pagination for event log, rate limiting on `/login`.
 - Example Dockerfiles for `auth-core` and `adapter-layer` created (kept as `.example` suffix intentionally until real code exists — rename to `Dockerfile` when building starts)
 - PR template drafted (needs to be moved to `.github/pull_request_template.md` to auto-apply)
-- Branch protection on `main` set up — **known issue:** admin/owner bypass wasn't ticked, may still allow direct pushes; check "Do not allow bypassing the above settings" in branch protection rule
+- Branch protection on `main` set up
 - Project board — not yet set up (Projects tab → Board template → add Review column → seed with Week 1 tasks)
 
 ## Role Split (team of 4)
@@ -105,7 +105,7 @@ No dedicated docs/integration person — distributed across all 4 (see roadmap f
 
 ## Design
 
-Mobile app mockups being built in **Claude Design**. Screens: Dashboard, Event Log, Configuration, Alerts — bottom tab navigation, with interactive/clickable flow between screens (e.g. dashboard card → filtered event log).
+Mobile app mockups being built in **Claude Design** (as proof of concept won't make final design). Screens: Dashboard, Event Log, Configuration, Alerts — bottom tab navigation, with interactive/clickable flow between screens (e.g. dashboard card → filtered event log).
 
 ## Future Work (for report's recommendations section)
 
