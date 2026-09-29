@@ -1,60 +1,89 @@
 version: "3.9"
 
 services:
+  # -------------------------------------------------------------------
+  # 1. MySQL Database Service
+  # -------------------------------------------------------------------
   mysql:
     image: mysql:8.0
     container_name: latchpoint-mysql
     restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
+      # 1. Persists database data across restarts
       - mysql-data:/var/lib/mysql
+      # 2. Automatically executes your schema script when the container is first created
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      # Tests if MySQL is truly ready to accept connections
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     networks:
       - latchpoint-net
 
+  # -------------------------------------------------------------------
+  # 2. Auth Core Service (Spring Boot)
+  # -------------------------------------------------------------------
   auth-core:
     build:
       context: ./auth-core
+      dockerfile: Dockerfile
     container_name: latchpoint-auth-core
     restart: unless-stopped
     depends_on:
-      - mysql
+      mysql:
+        # Crucial: Waits until MySQL healthcheck passes before starting Auth Core
+        condition: service_healthy
     environment:
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      # Standard Spring Boot JDBC properties
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      # Custom properties for your application
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRY_MINUTES: ${JWT_EXPIRY_MINUTES}
       SESSION_TIMEOUT_MINUTES: ${SESSION_TIMEOUT_MINUTES}
     ports:
-      - "8080:8080"
+      - "${AUTH_CORE_PORT:-8080}:8080"
     networks:
       - latchpoint-net
 
+  # -------------------------------------------------------------------
+  # 3. Adapter Layer Service (Spring Boot)
+  # -------------------------------------------------------------------
   adapter-layer:
     build:
       context: ./adapter-layer
+      dockerfile: Dockerfile
     container_name: latchpoint-adapter-layer
     restart: unless-stopped
     depends_on:
       - auth-core
     environment:
-      AUTH_CORE_BASE_URL: http://auth-core:8080
+      AUTH_CORE_BASE_URL: ${AUTH_CORE_BASE_URL}
+      SERVER_PORT: 8081
     ports:
-      - "8081:8081"
+      - "${ADAPTER_LAYER_PORT:-8081}:8081"
     networks:
       - latchpoint-net
 
+# ---------------------------------------------------------------------
+# Networks & Storage Volumes
+# ---------------------------------------------------------------------
 networks:
   latchpoint-net:
     driver: bridge
 
 volumes:
   mysql-data:
+    driver: local
