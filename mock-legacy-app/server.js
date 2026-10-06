@@ -103,7 +103,7 @@ app.post('/verify-mfa', async (req, res) => {
 
 // 4. Route: Protected Legacy Business Portal (Warehouse Inventory)
 app.get('/portal', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'portal.html'));
+    res.sendFile(path.join(__dirname, 'views', 'portal.html'));
 });
 
 // Helper for UI to get logged in username
