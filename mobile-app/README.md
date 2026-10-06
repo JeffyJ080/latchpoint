@@ -1,70 +1,118 @@
-# Getting Started with Create React App
+# Latchpoint — Mobile Management App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The official mobile management interface for **Latchpoint**. Built with **React Native** and **Expo**, this application allows business owners and administrators to remotely monitor authentication security events, review real-time
+security alerts, and configure framework policies without touching server code.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 1. Overview & Architectural Role
 
-### `npm start`
+The mobile app operates strictly through Auth Core's **Management API** on port `8080`. It never touches legacy application traffic or the Adapter Layer directly; it provides a clean, mobile-first management dashboard for
+administrators.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+    ┌────────────────────────┐                      ┌───────────────────────┐                                      ┌───────────────┐                      ┌────────────────────┐                                                             
+    │                        │                      │                       │                                      │               │                      │                    │                                                             
+    │                        │                      │       Mobile App      │                                      │   Auth Core   │                      │                    │                                                             
+    │ Business Owner / Admin ├─Config─&─Monitoring─►│                       ├─Management─REST─API<br/>(Port─8080)─►│               ├─Audit─Logs─&─Config─►│ ("MySQL Database") │                                                             
+    │                        │                      │ (React Native / Expo) │                                      │ (Spring Boot) │                      │                    │                                                             
+    │                        │                      │                       │                                      │               │                      │                    │                                                             
+    └────────────────────────┘                      └───────────────────────┘                                      └───────────────┘                      └────────────────────┘                                                             
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
 
-### `npm test`
+### Key Responsibilities
+* **Security Monitoring:** Visualizes live authentication health, failed login spikes, and possible brute-force attacks.
+* **Audit Event Log:** Ingests and displays system-wide authentication events (`LOGIN_SUCCESS`, `LOGIN_FAILED`, `MFA_SUCCESS`, etc.).
+* **Policy Configuration:** Manages password requirements (length, symbols, rotation), MFA enforcement, and session timeouts remotely.
+* **Alert Feed:** Displays urgent system notifications (e.g., adapter disconnections, suspicious login volumes).
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 2. Technology Stack
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+| Layer | Technology | Description |
+| :--- | :--- | :--- |
+| **Framework** | [React Native](https://reactnative.dev/) (v0.86+) | Cross-platform native mobile runtime |
+| **Tooling & Platform** | [Expo](https://expo.dev/) (SDK 57) | Managed developer workflow & build system |
+| **Routing** | [Expo Router](https://docs.expo.dev/router/introduction/) (v57) | File-based routing (`src/app/`) |
+| **UI & Styling** | React Native StyleSheet + Custom Theme | Dark slate/cyberpunk palette (`#100e24`) |
+| **Language** | TypeScript | Static typing across components & API models |
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 3. Project Structure
 
-### `npm run eject`
+```
+mobile-app/
+├── assets/                  # App icons, splash screens, and images
+├── src/
+│   ├── app/                 # Expo Router file-based screens
+│   │   ├── _layout.tsx      # Root stack navigation layout
+│   │   ├── index.tsx        # Splash / welcome landing screen
+│   │   ├── login.tsx        # Admin login screen
+│   │   ├── signup.tsx       # Account registration screen
+│   │   └── dashboard.tsx    # Security monitoring & stats dashboard
+│   ├── components/          # Reusable UI elements (cards, headers, buttons)
+│   ├── constants/           # Color palette, spacing, and typography theme
+│   └── hooks/               # Custom React hooks (theme, color-scheme)
+├── app.json                 # Expo project configuration
+├── package.json             # Dependencies and npm scripts
+└── tsconfig.json            # TypeScript compiler configuration
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 4. Getting Started
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Prerequisites
+* **Node.js**: v18.x or higher
+* **npm**: v9.x or higher
+* **Expo Go App** (optional): Installed on your physical iOS/Android device for wireless testing.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Installation
+From the root of the repository, navigate into the `mobile-app` directory and install dependencies:
 
-## Learn More
+```bash
+cd mobile-app
+npm install
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Running Locally
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+To start the Expo development server:
 
-### Code Splitting
+```bash
+npx expo start
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+From the interactive terminal prompt, you can choose where to preview the app:
+* Press **`a`** to open on a connected **Android Emulator**.
+* Press **`i`** to open on an **iOS Simulator** (macOS only).
+* Press **`w`** to open in a **Web Browser**.
+* **Scan the QR Code** with your camera (iOS) or the Expo Go app (Android) to test on a physical phone.
 
-### Analyzing the Bundle Size
+> TIP
+> **Connecting to Auth Core from a Mobile Device:**
+> - When running on a **Web browser** or **desktop emulator**, Auth Core is available at `http://localhost:8080`.
+> - When running on a **physical mobile phone**, `localhost` points to the phone itself! Update your API base URL to use your development machine's local LAN IP address (e.g. `http://192.168.1.50:8080`).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
 
-### Making a Progressive Web App
+## 5. Backend Management API Endpoints
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+The mobile application communicates with the endpoints defined in [**`docs/Api contract.md`**](../docs/Api%20contract.md):
 
-### Advanced Configuration
+| Screen | Target Endpoint | Method | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Login** | `/login` | `POST` | Authenticates administrator credentials and receives a session token |
+| **Dashboard** | `/management/dashboard` | `GET` | Fetches system status, login counts, and MFA state |
+| **Event Log** | `/management/events` | `GET` | Paginated feed of authentication events with status/time filters |
+| **Settings** | `/management/config` | `GET`, `PUT` | Reads and updates password policies and session limits |
+| **Alerts** | `/management/alerts` | `GET` | Fetches active security warnings and incident notices |
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+---
 
-### Deployment
+## 6. Related References
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+* **API Specification:** [`docs/Api contract.md`](../docs/Api%20contract.md)
+* **Project Context & Scope:** [`docs/Project context.md`](../docs/Project%20context.md)
+* **Local Stack Setup:** [`docs/DEVELOPER_SETUP.md`](../docs/DEVELOPER_SETUP.md)
