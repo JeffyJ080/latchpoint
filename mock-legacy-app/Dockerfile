@@ -10,6 +10,7 @@ RUN npm install --omit=dev
 # Copy server code and public assets
 COPY server.js ./
 COPY public/ ./public/
+COPY views/ ./views/
 
 EXPOSE 8082
 
