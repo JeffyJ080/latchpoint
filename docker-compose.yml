@@ -52,6 +52,21 @@ services:
     networks:
       - latchpoint-net
 
+  legacy-app:
+      build:
+        context: ./mock-legacy-app
+      container_name: latchpoint-legacy-app
+      restart: unless-stopped
+      depends_on:
+        - adapter-layer
+      environment:
+        PORT: 8082
+        ADAPTER_URL: http://adapter-layer:8081
+      ports:
+        - "${LEGACY_APP_PORT:-8082}:8082"
+      networks:
+        - latchpoint-net
+
 networks:
   latchpoint-net:
     driver: bridge
