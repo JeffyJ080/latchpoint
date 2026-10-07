@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: auth-core
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:latchpoint}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USER:latchpoint}
+    password: ${DB_PASSWORD:latchpoint}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+server:
+  port: 8080
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+latchpoint:
+  jwt:
+    secret: ${JWT_SECRET:change-me-to-a-long-random-secret-at-least-32-bytes}
+    expiry-minutes: ${JWT_EXPIRY_MINUTES:30}
+  session:
+    timeout-minutes: ${SESSION_TIMEOUT_MINUTES:30}
+  mfa:
+    challenge-minutes: ${MFA_CHALLENGE_MINUTES:5}
+  rate-limit:
+    max-failures: ${LOGIN_MAX_FAILURES:5}
+    block-minutes: ${LOGIN_BLOCK_MINUTES:15}
+  adapter-endpoint: ${ADAPTER_ENDPOINT:http://adapter-layer:8081}
+  seed:
+    enabled: ${DEV_SEED_ENABLED:false}
+    username: ${DEV_SEED_USERNAME:admin}
+    password: ${DEV_SEED_PASSWORD:}
