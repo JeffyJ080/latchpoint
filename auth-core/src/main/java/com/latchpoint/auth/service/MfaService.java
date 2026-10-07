@@ -1,0 +1,7 @@
+package com.latchpoint.auth.service;
+import com.latchpoint.auth.config.AppProperties; import com.latchpoint.auth.exception.AuthExceptions.InvalidMfa; import com.latchpoint.auth.model.*; import com.latchpoint.auth.repository.MfaChallengeRepository; import com.warrenstrange.googleauth.GoogleAuthenticator; import org.springframework.stereotype.Service; import java.time.Instant; import java.util.UUID;
+@Service public class MfaService { private final MfaChallengeRepository repo; private final AppProperties props; private final GoogleAuthenticator auth=new GoogleAuthenticator(); private final EventLogService events;
+ public MfaService(MfaChallengeRepository r,AppProperties p,EventLogService e){repo=r;props=p;events=e;}
+ public String createChallenge(User user){MfaChallenge c=new MfaChallenge();c.setChallengeId(UUID.randomUUID().toString());c.setUser(user);c.setExpiresAt(Instant.now().plusSeconds(props.getMfa().getChallengeMinutes()*60));c.setUsed(false);repo.save(c);return c.getChallengeId();}
+ public void verify(String id,String code){MfaChallenge c=repo.findByChallengeId(id).orElseThrow(InvalidMfa::new); if(c.isUsed()||c.getExpiresAt().isBefore(Instant.now())||c.getUser().getMfaSecret()==null)throw new InvalidMfa(); try{int otp=Integer.parseInt(code);if(!auth.authorize(c.getUser().getMfaSecret(),otp))throw new InvalidMfa();}catch(NumberFormatException e){throw new InvalidMfa();} c.setUsed(true);repo.save(c);events.record("MFA_SUCCESS","success",c.getUser().getUsername(),null);}
+}
