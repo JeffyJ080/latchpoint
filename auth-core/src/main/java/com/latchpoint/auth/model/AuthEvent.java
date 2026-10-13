@@ -71,4 +71,3 @@ public class AuthEvent {
         this.userId = userId;
     }
 }
-
