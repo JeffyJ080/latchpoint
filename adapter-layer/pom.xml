@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <project xmlns="http://maven.apache.org/POM/4.0.0"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                                 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+        <modelVersion>4.0.0</modelVersion>
+
+        <!-- 1. Spring Boot Starter Parent: provides default dependency versions and compiler settings -->
+        <parent>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-parent</artifactId>
+            <version>3.3.3</version>
+            <relativePath/> <!-- lookup parent from repository -->
+        </parent>
+
+        <!-- 2. Project Coordinates -->
+        <groupId>com.latchpoint</groupId>
+        <artifactId>adapter-layer</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <name>adapter-layer</name>
+        <description>Adapter Layer / Translation Gateway for Latchpoint</description>
+
+        <!-- 3. Properties: Target Java 17 as per project specs -->
+        <properties>
+            <java.version>17</java.version>
+            <wiremock.version>3.9.1</wiremock.version>
+        </properties>
+
+        <!-- 4. Dependencies -->
+        <dependencies>
+            <!-- Web: Embedded Tomcat, REST controllers, and HTTP form handling -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-web</artifactId>
+            </dependency>
+
+            <!-- Validation: Annotations like @NotBlank, @NotNull, @Size for incoming DTOs -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-validation</artifactId>
+            </dependency>
+
+            <!-- Actuator: Health checks (/actuator/health) for Docker and mobile dashboard monitoring -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-actuator</artifactId>
+            </dependency>
+
+            <!-- Test Starter: JUnit 5, Mockito, AssertJ, and Spring Test context -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-test</artifactId>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- WireMock: Mocks the Auth Core REST API during tests so you can test independently -->
+            <dependency>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock-standalone</artifactId>
+                <version>${wiremock.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+
+        <!-- 5. Build Plugin: Packages the application into an executable fat JAR for Docker -->
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </build>
+    </project>

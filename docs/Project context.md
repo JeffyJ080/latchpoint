@@ -83,14 +83,14 @@ Positioned/marketed as "SaaS-style" (buy it, attach it, don't build it) but tech
 - Branch protection on `main` set up
 - Project board — not yet set up (Projects tab → Board template → add Review column → seed with Week 1 tasks)
 
-## Role Split (team of 4)
+## Role Split (team of 3)
 
 | Person | Owns |
 |---|---|
 | A | `auth-core` lead — API contract, login, sessions, password policy |
-| B | `auth-core` support + MFA implementation |
+| C & B | `auth-core` support + MFA implementation |
 | C | `adapter-layer` + Docker/docker-compose setup |
-| D | `mobile-app` (React Native) |
+| B | `mobile-app` (React Native) |
 
 No dedicated docs/integration person — distributed across all 4 (see roadmap for who does what when).
 
