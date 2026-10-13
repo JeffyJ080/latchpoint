@@ -1,4 +1,3 @@
-
 package com.latchpoint.auth.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -106,9 +105,8 @@ public class User {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+        @Column(name = "is_active", nullable = false)
+        private boolean enabled = true;
 
     public Instant getCreatedAt() {
         return createdAt;
