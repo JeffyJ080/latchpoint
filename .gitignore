@@ -48,3 +48,4 @@ docker-compose.override.yml
 # --- Logs ---
 *.log
 logs/
+mobile-app/expo-env.d.ts
