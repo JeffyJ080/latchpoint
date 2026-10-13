@@ -15,3 +15,4 @@ public class AuthEvent {
     public String getUsername(){return username;} public void setUsername(String v){username=v;} public String getStatus(){return status;} public void setStatus(String v){status=v;}
     public String getEventType(){return eventType;} public void setEventType(String v){eventType=v;} public String getIpAddress(){return ipAddress;} public void setIpAddress(String v){ipAddress=v;}
 }
+
