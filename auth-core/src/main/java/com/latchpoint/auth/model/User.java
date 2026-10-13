@@ -105,8 +105,9 @@ public class User {
         return enabled;
     }
 
-        @Column(name = "is_active", nullable = false)
-        private boolean enabled = true;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
 
     public Instant getCreatedAt() {
         return createdAt;
