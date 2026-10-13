@@ -1,3 +1,4 @@
+
 package com.latchpoint.auth.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
