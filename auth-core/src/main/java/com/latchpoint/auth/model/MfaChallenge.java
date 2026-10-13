@@ -1,16 +1,16 @@
 package com.latchpoint.auth.model;
 
 import jakarta.persistence.*;
-import java.time.Instant;
 
-@Entity @Table(name="mfa_challenges", indexes=@Index(name="idx_mfa_challenge_id", columnList="challengeId", unique=true))
-public class MfaChallenge {
-    @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
-    @Column(nullable=false, unique=true, length=80) private String challengeId;
-    @ManyToOne(fetch=FetchType.LAZY, optional=false) private User user;
-    @Column(nullable=false) private Instant expiresAt;
-    @Column(nullable=false) private boolean used;
-    public Long getId(){return id;} public String getChallengeId(){return challengeId;} public void setChallengeId(String v){challengeId=v;}
-    public User getUser(){return user;} public void setUser(User v){user=v;} public Instant getExpiresAt(){return expiresAt;} public void setExpiresAt(Instant v){expiresAt=v;}
-    public boolean isUsed(){return used;} public void setUsed(boolean v){used=v;}
+@Entity @Table(name="framework_configuration")
+public class FrameworkConfiguration {
+    @Id private Long id = 1L;
+    @Column(nullable=false) private boolean mfaEnabled = true;
+    @Column(nullable=false) private int minLength = 8;
+    @Column(nullable=false) private boolean requireSymbol = true;
+    @Column(nullable=false) private int expiryDays = 90;
+    @Column(nullable=false) private int sessionTimeoutMinutes = 30;
+    public Long getId(){return id;} public boolean isMfaEnabled(){return mfaEnabled;} public void setMfaEnabled(boolean v){mfaEnabled=v;}
+    public int getMinLength(){return minLength;} public void setMinLength(int v){minLength=v;} public boolean isRequireSymbol(){return requireSymbol;} public void setRequireSymbol(boolean v){requireSymbol=v;}
+    public int getExpiryDays(){return expiryDays;} public void setExpiryDays(int v){expiryDays=v;} public int getSessionTimeoutMinutes(){return sessionTimeoutMinutes;} public void setSessionTimeoutMinutes(int v){sessionTimeoutMinutes=v;}
 }
