@@ -1,6 +1,6 @@
 # Contributing to Latchpoint
 
-Quick rules so 4 people don't end up with 4 different habits.
+Quick rules so 3 people don't end up with 3 different habits.
 
 ## Branch Naming
 
@@ -45,10 +45,10 @@ Keep the summary under ~60 characters. Add detail in the commit body if needed, 
 
 | Area | Owner(s) |
 |---|---|
-| `auth-core` | Person A, Person B |
-| `adapter-layer` | Person C |
-| `docker-compose.yml` / Docker setup | Person C |
-| `mobile-app` | Person D |
+| `auth-core` | Boikanyo, Christiaan, Neo |
+| `adapter-layer` | Christiaan |
+| `docker-compose.yml` / Docker setup | Christiaan |
+| `mobile-app` | Neo |
 
 If you're touching someone else's area, ping them first — not a hard rule, just avoids stepping on toes mid-build.
 
