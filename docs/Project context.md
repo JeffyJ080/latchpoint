@@ -87,10 +87,10 @@ Positioned/marketed as "SaaS-style" (buy it, attach it, don't build it) but tech
 
 | Person | Owns |
 |---|---|
-| A | `auth-core` lead — API contract, login, sessions, password policy |
-| C & B | `auth-core` support + MFA implementation |
-| C | `adapter-layer` + Docker/docker-compose setup |
-| B | `mobile-app` (React Native) |
+| Boikanyo | `auth-core` lead — API contract, login, sessions, password policy |
+| Christiaan & Neo | `auth-core` support + MFA implementation |
+| Christiaan | `adapter-layer` + Docker/docker-compose setup |
+| Neo | `mobile-app` (React Native) |
 
 No dedicated docs/integration person — distributed across all 4 (see roadmap for who does what when).
 
