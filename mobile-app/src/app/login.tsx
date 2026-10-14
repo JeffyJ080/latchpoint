@@ -1,41 +1,57 @@
+import { BlurView } from 'expo-blur';
 import { Link } from 'expo-router';
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function LoginScreen() {
   return (
+
     <View style={styles.container}>
-      <Image source={require('./Riverside (2).png')} style={styles.Image} />
 
-      <Text style={styles.texts}>Welcome back</Text>
-      <Text style={styles.texts}>Login to continue</Text>
+      <Image
+        source={require('./Latchpoint resources/motherbaord wallpaper.png')}
+        style={styles.Image}
+      />
 
-      <View style={styles.buttonContainer}>
-        <TextInput
-          style={styles.textarea}
-          placeholder="Enter your email"
-          placeholderTextColor="#100e24"
-        />
+      <BlurView
+              intensity={50}
+              tint="dark"
+              style={styles.squareContainer}
+            />
 
-        <TextInput
-          style={styles.textarea}
-          placeholder="Enter your password"
-          placeholderTextColor="#100e24"
-          secureTextEntry={true}
-        />
-      </View>
+        <Text style={styles.texts}>Welcome back</Text>
+        <Text style={styles.texts}>Login to continue</Text>
 
-    <Link href= "/dashboard" asChild>
-            <Pressable style={styles.button}>
-              <Text style={styles.buttonText}>LOGIN</Text>
-            </Pressable>
-            </Link>
+        <View style={styles.buttonContainer}>
+          <TextInput
+            style={styles.textarea}
+            placeholder="Enter your email"
+            placeholderTextColor="#232230"
+          />
 
-      <Text style={styles.label}>Forgot Password?</Text>
+          <TextInput
+            style={styles.textarea}
+            placeholder="Enter your password"
+            placeholderTextColor="#232230"
+            secureTextEntry={true}
+          />
+        </View>
 
-      <Text style={styles.label}>
-        Don't have an account?{' '}
-        <Text style={{ color: 'white' }}>Sign up</Text>
-      </Text>
+        <Link href="/dashboard" asChild>
+          <Pressable style={styles.button}>
+            <Text style={styles.buttonText}>LOGIN</Text>
+          </Pressable>
+        </Link>
+
+        <Text style={styles.label}>Forgot Password?</Text>
+
+        <Link href="/signup" asChild>
+          <Pressable style={styles.Plainbutton}>
+            <Text style= {styles.label}> Don't have an account?{' '}
+            <Text style={{ color: 'white' }}>Sign up</Text>
+            </Text>
+          </Pressable>
+        </Link>
+
     </View>
   );
 }
@@ -43,17 +59,29 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#100e24',
+    backgroundColor: '#050B14',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
   },
 
+  squareContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '90%',
+    left: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    zIndex: 0,
+    overflow: 'hidden',
+  },
+
   Image: {
+    position: 'absolute',
     borderRadius: 10,
-    width: 200,
-    height: 200,
-    marginBottom: 50,
+    height: '150%',
+    marginBottom: 150,
   },
 
   texts: {
@@ -71,13 +99,12 @@ const styles = StyleSheet.create({
   },
 
   buttonContainer: {
-    width: '100%',
-    maxWidth: 360,
-    marginTop: 24,
+    width: '80%',
+    marginTop: 40,
   },
 
   label: {
-    color: '#a199b8',
+    color: '#7d7a86',
     fontSize: 16,
     marginBottom: 8,
     marginTop: 16,
@@ -85,23 +112,24 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: '#a199b8',
+    backgroundColor: '#c6baf1',
     borderRadius: 8,
     paddingVertical: 7,
     paddingHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 12,
+    width :'80%',
   },
 
   buttonText: {
-    color: '#100e24',
+    color: '#292838',
     fontSize: 16,
     fontWeight: 'bold',
   },
 
   textarea: {
-    backgroundColor: '#767483',
+    backgroundColor: '#e5deff',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -112,4 +140,10 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     marginBottom: 12,
   },
+
+  Plainbutton: {
+    backgroundColor: 'transparent',
+    borderRadius: 8,
+  },
+
 });
