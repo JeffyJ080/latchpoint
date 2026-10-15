@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Riverside Logistics & Supply - Employee Portal</title>
+    <style>
+        body {
+            background-color: #d6d9dc;
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 40px 10px;
+            color: #333;
+        }
+
+        .wrapper {
+            max-width: 480px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #557088;
+            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .header {
+            background: linear-gradient(to bottom, #395c80 0%, #1e3852 100%);
+            color: #ffffff;
+            padding: 16px 20px;
+            border-bottom: 2px solid #14283c;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            margin: 4px 0 0 0;
+            font-size: 11px;
+            color: #a9c6e2;
+        }
+
+        .content {
+            padding: 24px 20px;
+        }
+
+        .notice {
+            background: #fff8db;
+            border: 1px solid #d4c274;
+            padding: 10px 12px;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #2b3e50;
+            font-size: 13px;
+            border: 1px solid #8ba0b2;
+            background: #fbfbfb;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2b608a;
+            background: #ffffff;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #4f79a3 0%, #294c6f 100%);
+            color: white;
+            border: 1px solid #1c3650;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: linear-gradient(to bottom, #5c8bb8 0%, #32587f 100%);
+        }
+
+        .error-msg {
+            background: #fbe3e4;
+            color: #d12f19;
+            border: 1px solid #fbc2c4;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .mfa-box {
+            display: none;
+            border: 2px dashed #395c80;
+            background: #f0f5fa;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .footer {
+            background: #f0f0f0;
+            border-top: 1px solid #cccccc;
+            padding: 10px 20px;
+            font-size: 10px;
+            color: #666666;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <div class="header">
+            <h1>Riverside Logistics & Supply</h1>
+            <p>Internal Operations & Inventory System &bull; v2.4 (2011)</p>
+        </div>
+
+        <div class="content">
+            <div class="notice">
+                <strong>Notice:</strong> This legacy terminal is authenticated via <strong>Latchpoint Adapter
+                    Gateway</strong> (Port 8081).
+            </div>
+
+            <div id="errorBox" class="error-msg"></div>
+
+            <!-- Form 1: Standard Credentials -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Operator ID / Username:</label>
+                    <input type="text" id="username" name="username" required autocomplete="username"
+                        placeholder="demo_user">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">System Password:</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn" id="loginBtn">Log In</button>
+            </form>
+
+            <!-- Form 2: MFA Intercept Dialog (Hidden by Default) -->
+            <div id="mfaBox" class="mfa-box">
+                <h3 style="margin-top: 0; font-size: 14px; color: #1e3852;">Two-Factor Authentication Required</h3>
+                <p style="font-size: 12px; margin-bottom: 12px;">Enter the 6-digit code from Google Authenticator:</p>
+
+                <form id="mfaForm">
+                    <input type="hidden" id="challengeId" name="mfaChallengeId">
+                    <div class="form-group">
+                        <label for="mfaCode">TOTP Security Code:</label>
+                        <input type="text" id="mfaCode" name="code" maxlength="6" pattern="[0-9]{6}"
+                            placeholder="123456"
+                            style="letter-spacing: 4px; font-size: 16px; font-weight: bold; width: 140px; text-align: center;"
+                            required>
+                    </div>
+                    <button type="submit" class="btn" id="mfaBtn">Verify Code</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="footer">
+            &copy; 2011 Riverside Logistics Corp. &bull; Protected by Latchpoint Authentication Framework
+        </div>
+    </div>
+
+    <script>
+        const errorBox = document.getElementById('errorBox');
+        const loginForm = document.getElementById('loginForm');
+        const mfaBox = document.getElementById('mfaBox');
+        const mfaForm = document.getElementById('mfaForm');
+
+        // 1. Submit Credentials
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorBox.style.display = 'none';
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const res = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success && !data.mfaRequired) {
+                    showError(data.error || 'Authentication failed');
+                    return;
+                }
+
+                // Check if MFA is challenged
+                if (data.mfaRequired) {
+                    document.getElementById('challengeId').value = data.mfaChallengeId;
+                    loginForm.style.display = 'none';
+                    mfaBox.style.display = 'block';
+                    document.getElementById('mfaCode').focus();
+                    return;
+                }
+
+                // Direct success
+                window.location.href = data.redirect;
+            } catch (err) {
+                showError('Could not reach legacy server gateway');
+            }
+        });
+
+        // 2. Submit MFA TOTP
+        mfaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorBox.style.display = 'none';
+
+            const mfaChallengeId = document.getElementById('challengeId').value;
+            const code = document.getElementById('mfaCode').value;
+
+            try {
+                const res = await fetch('/verify-mfa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mfaChallengeId, code })
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    showError(data.error || 'Invalid 6-digit code');
+                    return;
+                }
+
+                window.location.href = data.redirect;
+            } catch (err) {
+                showError('MFA verification error');
+            }
+        });
+
+        function showError(msg) {
+            errorBox.textContent = msg;
+            errorBox.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

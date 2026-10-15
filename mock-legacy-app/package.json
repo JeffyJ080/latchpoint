@@ -1,0 +1,14 @@
+    {
+        "name": "mock-legacy-app",
+        "version": "1.0.0",
+        "description": "Riverside Logistics & Inventory - Legacy Client Demo for Latchpoint",
+        "main": "server.js",
+        "scripts": {
+            "start": "node server.js"
+        },
+        "dependencies": {
+            "axios": "^1.7.0",
+            "cookie-parser": "^1.4.6",
+            "express": "^4.19.2"
+        }
+    }
