@@ -1,4 +1,4 @@
-import BlurView from 'expo-blur/build/BlurView';
+import { BlurView } from 'expo-blur';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
