@@ -13,7 +13,7 @@ import { useEffect } from 'react';
 
 
 
-export default function SignUpScreen() {
+export default function LoginScreen() {
 
   const player = useVideoPlayer(
     require('./Latchpoint resources/latchpoint_web_loop.mp4'),
