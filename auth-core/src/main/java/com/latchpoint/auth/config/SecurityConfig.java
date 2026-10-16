@@ -15,14 +15,20 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableConfigurationProperties(AppProperties.class)
 public class SecurityConfig {
-    @Bean PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
-
-    @Bean SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationFilter filter) throws Exception {
-        return http.csrf(c -> c.disable())
-            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(a -> a
-                .requestMatchers("/login", "/verify-mfa", "/session/validate", "/logout", "/actuator/health").permitAll()
-                .requestMatchers("/management/**").hasRole("ADMIN")
-                .anyRequest().authenticated())
-            .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class).build();
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationFilter filter) throws Exception {
+        return http.csrf(c -> c.disable())
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(a -> a
+                        .requestMatchers("/login", "/verify-mfa", "/session/validate", "/logout", "/actuator/health")
+                        .permitAll()
+                        .requestMatchers("/management/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class).build();
+    };
+}

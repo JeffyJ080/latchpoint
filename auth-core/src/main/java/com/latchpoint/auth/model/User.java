@@ -1,6 +1,6 @@
-
 package com.latchpoint.auth.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.Instant;
 
@@ -8,36 +8,31 @@ import java.time.Instant;
 @Table(name = "users")
 public class User {
 
+    public enum Role {
+        ADMIN, END_USER
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
 
     @JsonIgnore
-    @Column(name = "password_hash", nullable = false, length = 255)
+    @Column(name = "password", nullable = false, length = 255)
     private String passwordHash;
+
+    @Column(nullable = false, length = 100)
+    private String email;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role = Role.END_USER;
 
-    @Column(name = "mfa_enabled", nullable = false)
-    private boolean mfaEnabled = false;
-
-    @JsonIgnore
-    @Column(name = "mfa_secret", length = 64)
-    private String mfaSecret;
-
-    @Column(nullable = false)
+    @Column(name = "is_active", nullable = false)
     private boolean enabled = true;
-
-    @Column(name = "failed_login_attempts", nullable = false)
-    private int failedLoginAttempts = 0;
-
-    @Column(name = "locked_until")
-    private Instant lockedUntil;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -45,27 +40,14 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        Instant now = Instant.now();
-        createdAt = now;
-        updatedAt = now;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
-}
-// Default constructor required by JPA
     public User() {
     }
 
-    // Constructor for creating a user
-    public User(String username, String passwordHash, String role) {
+    public User(String username, String passwordHash, String email, Role role) {
         this.username = username;
         this.passwordHash = passwordHash;
-        this.role = role;
+        this.email = email;
+        this.role = (role != null) ? role : Role.END_USER;
     }
 
     @PrePersist
@@ -73,14 +55,15 @@ public class User {
         Instant now = Instant.now();
         createdAt = now;
         updatedAt = now;
+        if (email == null || email.isBlank()) {
+            email = username + "@latchpoint.local";
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();
     }
-
-    // Getters and setters
 
     public Long getId() {
         return id;
@@ -102,33 +85,20 @@ public class User {
         this.passwordHash = passwordHash;
     }
 
-    public String getRole() {
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
-        if (!"ADMIN".equals(role) && !"END_USER".equals(role)) {
-            throw new IllegalArgumentException(
-                "Role must be ADMIN or END_USER"
-            );
-        }
+    public void setRole(Role role) {
         this.role = role;
-    }
-
-    public boolean isMfaEnabled() {
-        return mfaEnabled;
-    }
-
-    public void setMfaEnabled(boolean mfaEnabled) {
-        this.mfaEnabled = mfaEnabled;
-    }
-
-    public String getMfaSecret() {
-        return mfaSecret;
-    }
-
-    public void setMfaSecret(String mfaSecret) {
-        this.mfaSecret = mfaSecret;
     }
 
     public boolean isEnabled() {
@@ -137,27 +107,6 @@ public class User {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public int getFailedLoginAttempts() {
-        return failedLoginAttempts;
-    }
-
-    public void setFailedLoginAttempts(int failedLoginAttempts) {
-        if (failedLoginAttempts < 0) {
-            throw new IllegalArgumentException(
-                "Failed login attempts cannot be negative"
-            );
-        }
-        this.failedLoginAttempts = failedLoginAttempts;
-    }
-
-    public Instant getLockedUntil() {
-        return lockedUntil;
-    }
-
-    public void setLockedUntil(Instant lockedUntil) {
-        this.lockedUntil = lockedUntil;
     }
 
     public Instant getCreatedAt() {
