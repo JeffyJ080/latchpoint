@@ -1,0 +1,3 @@
+package com.latchpoint.auth.service;
+import com.latchpoint.auth.model.FrameworkConfiguration; import org.junit.jupiter.api.Test; import static org.junit.jupiter.api.Assertions.*;
+class PasswordPolicyServiceTest { @Test void rejectsShortPassword(){var c=new FrameworkConfiguration();assertThrows(RuntimeException.class,()->new PasswordPolicyService().validate("short",c));} @Test void rejectsMissingSymbol(){var c=new FrameworkConfiguration();assertThrows(RuntimeException.class,()->new PasswordPolicyService().validate("password123",c));} @Test void acceptsValidPassword(){var c=new FrameworkConfiguration();assertDoesNotThrow(()->new PasswordPolicyService().validate("Password1!",c));}}
