@@ -28,7 +28,6 @@ public class SeedConfiguration {
             user.setUsername(properties.getSeed().getUsername());
             user.setPasswordHash(encoder.encode(properties.getSeed().getPassword()));
             user.setEmail(properties.getSeed().getUsername() + "@latchpoint.local");
-            user.setEnabled(true);
             user.setRole("admin".equalsIgnoreCase(user.getUsername()) ? User.Role.ADMIN : User.Role.END_USER);
             users.save(user);
         };

@@ -105,10 +105,6 @@ public class User {
         return enabled;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
     public Instant getCreatedAt() {
         return createdAt;
     }
