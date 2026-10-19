@@ -11,17 +11,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class SeedConfiguration {
-    @Bean CommandLineRunner seed(UserRepository users, ConfigurationRepository configurations,
-                                 PasswordEncoder encoder, AppProperties properties) {
+
+    @Bean
+    CommandLineRunner seed(UserRepository users, ConfigurationRepository configurations,
+            PasswordEncoder encoder, AppProperties properties) {
         return args -> {
-            if (!configurations.existsById(1L)) configurations.save(new FrameworkConfiguration());
+            if (!configurations.existsById(1L)) {
+                configurations.save(new FrameworkConfiguration());
+            }
             if (!properties.getSeed().isEnabled() || properties.getSeed().getPassword() == null
                     || properties.getSeed().getPassword().isBlank() || properties.getSeed().getUsername() == null
-                    || users.findByUsername(properties.getSeed().getUsername()).isPresent()) return;
+                    || users.findByUsername(properties.getSeed().getUsername()).isPresent()) {
+                return;
+            }
             User user = new User();
             user.setUsername(properties.getSeed().getUsername());
             user.setPasswordHash(encoder.encode(properties.getSeed().getPassword()));
-            user.setMfaEnabled(false);
+            user.setEmail(properties.getSeed().getUsername() + "@latchpoint.local");
             user.setEnabled(true);
             user.setRole("admin".equalsIgnoreCase(user.getUsername()) ? User.Role.ADMIN : User.Role.END_USER);
             users.save(user);
