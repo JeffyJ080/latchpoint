@@ -29,5 +29,5 @@ public class SecurityConfig {
                         .requestMatchers("/management/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class).build();
-    }
+    };
 }
