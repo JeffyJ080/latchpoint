@@ -1,9 +1,9 @@
-import { styles } from '@/hooks/use-color-scheme.web';
+
 import { useEventListener } from 'expo';
 import { useRouter } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -33,7 +33,6 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
 
-      {/* Full-screen intro video */}
       <VideoView
         player={player}
         style={styles.video}
@@ -45,3 +44,17 @@ export default function HomeScreen() {
   );
 }
 
+const styles = StyleSheet.create({
+
+container: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#000000',
+  },
+  video: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+})

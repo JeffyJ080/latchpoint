@@ -1,10 +1,9 @@
 
-import { styles } from '@/hooks/use-color-scheme.web';
 import { useEventListener } from 'expo';
 import { useRouter } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -26,7 +25,6 @@ useEventListener(player, 'playToEnd', () => {
   return (
     <View style={styles.container}>
 
-      {/* Full-screen intro video */}
       <VideoView
         player={player}
         style={styles.video}
@@ -34,20 +32,23 @@ useEventListener(player, 'playToEnd', () => {
         contentFit="cover"
       />
 
-      {/* Transparent layer that detects clicks */}
-      <Pressable style={styles.touchLayer}
-      >
-        {videoFinished && (
-          <View style={styles.buttonContinue}>
-            <Text>
-             TAP TO CONTINUE
-            </Text>
-          </View>
-        )}
-      </Pressable>
-
 
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+
+container: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#000000',
+  },
+  video: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+})
 

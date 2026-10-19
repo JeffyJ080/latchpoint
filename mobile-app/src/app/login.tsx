@@ -7,11 +7,6 @@ export default function LoginScreen() {
 
     <View style={styles.container}>
 
-      <Image
-        source={require('./Latchpoint resources/motherbaord wallpaper.png')}
-        style={styles.Image}
-      />
-
       <BlurView
               intensity={50}
               tint="dark"

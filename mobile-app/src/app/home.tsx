@@ -1,4 +1,4 @@
-import BlurView from 'expo-blur/build/BlurView';
+import { BlurView } from 'expo-blur';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -9,8 +9,6 @@ export default function HomeScreen() {
   return (
     
     <View style={styles.container}>
-
-      <Image  source={require('./Latchpoint resources/motherbaord wallpaper.png')}  style={styles.Image}/>
 
       <BlurView
         intensity={50}
