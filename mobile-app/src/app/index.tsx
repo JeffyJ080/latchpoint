@@ -25,6 +25,7 @@ useEventListener(player, 'playToEnd', () => {
   return (
     <View style={styles.container}>
 
+      {/* Full-screen intro video */}
       <VideoView
         player={player}
         style={styles.video}
@@ -51,4 +52,3 @@ container: {
     height: '100%',
   },
 })
-
