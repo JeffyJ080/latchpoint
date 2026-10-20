@@ -1,4 +1,5 @@
 
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Platform,
@@ -80,7 +81,7 @@ function LineChart({
       const y =
         chartHeight -
         ((value - minValue) / Math.max(maxValue - minValue || 1, 1)) *
-          (chartHeight - 12) -
+        (chartHeight - 12) -
         6;
 
       return { x, y };
@@ -166,7 +167,6 @@ const NAV_ITEMS = [
   { label: 'Security Events', icon: '◉' },
   { label: 'Users', icon: '♙' },
   { label: 'Alerts', icon: '!' },
-  { label: 'Integrations', icon: '⇄' },
   { label: 'Settings', icon: '⚙' },
 ];
 
@@ -612,23 +612,36 @@ export default function DashboardScreen() {
   );
 
   const selectedSite = WEBSITES[selectedWebsite];
+  const router = useRouter();
+
+  const ROUTES: Record<string, string> = {
+    Overview: '/dashboard',
+    'Security Events': '/SecurityEvents',
+    Users: '/users',
+    Alerts: '/alerts',
+    Integrations: '/Integration',
+    Settings: '/Settings',
+  };
 
   const renderNavigation = (compact = false) =>
-    NAV_ITEMS.filter((item) =>
-      compact
-        ? ['Overview', 'Security Events', 'Alerts', 'Settings'].includes(
-            item.label
-          )
-        : true
-    ).map((item) => (
-      <NavigationItem
-        key={item.label}
-        item={item}
-        active={activeNav === item.label}
-        onPress={() => setActiveNav(item.label)}
-        compact={compact}
-      />
-    ));
+  NAV_ITEMS.filter((item) =>
+    compact
+      ? ['Overview', 'Security Events', 'Alerts', 'Settings'].includes(
+          item.label
+        )
+      : true
+  ).map((item) => (
+    <NavigationItem
+      key={item.label}
+      item={item}
+      active={activeNav === item.label}
+      onPress={() => {
+        setActiveNav(item.label);
+        router.push(ROUTES[item.label] as any);
+      }}
+      compact={compact}
+    />
+  ));
 
   return (
     <View style={styles.app}>
@@ -737,7 +750,7 @@ export default function DashboardScreen() {
                       style={[
                         styles.siteSwitchText,
                         selectedWebsite === index &&
-                          styles.siteSwitchTextActive,
+                        styles.siteSwitchTextActive,
                       ]}
                     >
                       {index + 1}
@@ -810,7 +823,7 @@ export default function DashboardScreen() {
           </View>
 
           <Text style={styles.footer}>
-            LatchPoint · Security monitoring dashboard 
+            LatchPoint · Security monitoring dashboard
           </Text>
         </ScrollView>
 
@@ -822,6 +835,7 @@ export default function DashboardScreen() {
       </View>
     </View>
   );
+
 }
 
 const styles = StyleSheet.create({

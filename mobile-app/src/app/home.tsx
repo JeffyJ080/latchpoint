@@ -1,7 +1,7 @@
-import { BlurView } from 'expo-blur';
+import BlurView from 'expo-blur/build/BlurView';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen() {
   const [isHovered, setIsHovered] = useState(false);

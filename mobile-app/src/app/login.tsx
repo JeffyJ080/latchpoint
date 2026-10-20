@@ -1,6 +1,6 @@
 import { BlurView } from 'expo-blur';
 import { Link } from 'expo-router';
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function LoginScreen() {
   return (
