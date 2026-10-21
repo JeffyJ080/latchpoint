@@ -15,11 +15,14 @@ public class ManagementService {
     private final ConfigurationRepository configs;
     private final AuthEventRepository events;
     private final AppProperties props;
+    private final AdapterHealthService adapterHealth;
 
-    public ManagementService(ConfigurationRepository c, AuthEventRepository e, AppProperties p) {
-        configs = c;
-        events = e;
-        props = p;
+    public ManagementService(ConfigurationRepository c, AuthEventRepository e, AppProperties p,
+            AdapterHealthService adapterHealth) {
+        this.configs = c;
+        this.events = e;
+        this.props = p;
+        this.adapterHealth = adapterHealth;
     }
 
     private FrameworkConfiguration config() {
@@ -33,8 +36,9 @@ public class ManagementService {
         var c = config();
         return new DashboardResponse(failed > 20 ? "at_risk" : "secure", new RecentLogins(success, failed),
                 c.isMfaEnabled(),
-                props.getAdapterEndpoint() == null || props.getAdapterEndpoint().isBlank() ? "disconnected"
-                        : "connected");
+                adapterHealth.isConnected()
+                        ? "connected"
+                        : "disconnected");
     }
 
     public EventsResponse eventList(
@@ -119,17 +123,41 @@ public class ManagementService {
                 new PasswordPolicy(c.getMinLength(), c.isRequireSymbol(), c.getExpiryDays()),
                 c.getSessionTimeoutMinutes(),
                 new AdapterConnection(props.getAdapterEndpoint(),
-                        props.getAdapterEndpoint() == null || props.getAdapterEndpoint().isBlank() ? "disconnected"
-                                : "connected"));
+                        adapterHealth.isConnected()
+                                ? "connected"
+                                : "disconnected"));
     }
 
     public AlertsResponse alerts() {
-        Instant now = Instant.now(), since = now.minus(15, java.time.temporal.ChronoUnit.MINUTES);
-        List<AlertResponse> out = new ArrayList<>();
-        long failures = events.countByEventTypeAndTimestampAfter("LOGIN_FAILED", since);
-        if (failures >= 5)
-            out.add(new AlertResponse("failed-login-spike", "failed_login_spike",
-                    "Multiple failed login attempts detected in the last 15 minutes.", now.toString()));
-        return new AlertsResponse(out);
+        Instant now = Instant.now();
+
+        long windowMinutes = props.getRateLimit().getBlockMinutes();
+        Instant since = now.minusSeconds(windowMinutes * 60);
+
+        List<AlertResponse> results = new ArrayList<>();
+
+        long failures = events.countByEventTypeAndTimestampAfter(
+                "LOGIN_FAILED", since)
+                + events.countByEventTypeAndTimestampAfter(
+                        "MFA_FAILED", since);
+
+        if (failures >= props.getRateLimit().getMaxFailures()) {
+            results.add(new AlertResponse(
+                    "failed-login-spike",
+                    "failed_login_spike",
+                    "Multiple authentication failures detected in the last "
+                            + windowMinutes + " minutes.",
+                    now.toString()));
+        }
+
+        if (!adapterHealth.isConnected()) {
+            results.add(new AlertResponse(
+                    "adapter-disconnected",
+                    "adapter_disconnect",
+                    "The legacy adapter is unreachable or unhealthy.",
+                    now.toString()));
+        }
+
+        return new AlertsResponse(results);
     }
 }
