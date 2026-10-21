@@ -57,7 +57,7 @@ public class AuthenticationService {
             throw new InvalidCredentials();
         }
 
-        if (mfa.isMfaActive(u)) {
+        if (mfa.isMfaRequired(u)) {
             return LoginResponse.mfa(mfa.createChallenge(u));
         }
 

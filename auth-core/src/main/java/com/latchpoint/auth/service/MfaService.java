@@ -8,7 +8,6 @@ import com.latchpoint.auth.model.UserMfa;
 import com.latchpoint.auth.repository.UserMfaRepository;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import org.springframework.stereotype.Service;
-import com.latchpoint.auth.exception.AuthExceptions.TooManyAttempts;
 import com.latchpoint.auth.repository.AuthEventRepository;
 import com.latchpoint.auth.exception.AuthExceptions.InvalidCredentials;
 import com.latchpoint.auth.exception.AuthExceptions.InvalidConfiguration;
@@ -16,6 +15,7 @@ import com.latchpoint.auth.repository.UserRepository;
 import com.latchpoint.auth.repository.SessionRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+import com.latchpoint.auth.repository.ConfigurationRepository;
 
 import java.time.Instant;
 import java.util.Map;
@@ -37,9 +37,11 @@ public class MfaService {
     private final UserRepository users;
     private final PasswordEncoder encoder;
     private final SessionRepository sessions;
+    private final ConfigurationRepository configs;
 
     public MfaService(UserMfaRepository r, AppProperties p, EventLogService e, AuthEventRepository authEvents,
-            UserRepository users, PasswordEncoder encoder, SessionRepository sessions) {
+            UserRepository users, PasswordEncoder encoder, SessionRepository sessions,
+            ConfigurationRepository configs) {
         this.mfaRepo = r;
         this.props = p;
         this.events = e;
@@ -47,6 +49,7 @@ public class MfaService {
         this.users = users;
         this.encoder = encoder;
         this.sessions = sessions;
+        this.configs = configs;
     }
 
     public record EnrollmentSetup(String secret, String expiresAt) {
@@ -235,5 +238,13 @@ public class MfaService {
         mfaRepo.save(record);
         sessions.deleteByUser(user);
         enrollments.remove(username);
+    }
+
+    public boolean isMfaRequired(User user) {
+        boolean enabled = configs.findById(1L)
+                .map(config -> config.isMfaEnabled())
+                .orElse(true);
+
+        return enabled && isMfaActive(user);
     }
 }
