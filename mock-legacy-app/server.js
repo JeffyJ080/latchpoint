@@ -74,7 +74,12 @@ app.post('/login', async (req, res) => {
         return res.json({ success: true, redirect: '/portal' });
     } catch (err) {
         const status = err.response ? err.response.status : 500;
-        const msg = status === 401 ? 'Invalid username or password' : 'Authentication service unavailable';
+        const msg =
+            status === 401
+                ? 'Invalid username or password'
+                : status === 429
+                    ? 'Too many failed attempts. Please try again later.'
+                    : 'Authentication service unavailable';
         return res.status(status).json({ success: false, error: msg });
     }
 });
