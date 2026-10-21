@@ -2,11 +2,14 @@ package com.latchpoint.auth.service;
 
 import com.latchpoint.auth.config.AppProperties;
 import com.latchpoint.auth.exception.AuthExceptions.InvalidMfa;
+import com.latchpoint.auth.exception.AuthExceptions.TooManyAttempts;
 import com.latchpoint.auth.model.User;
 import com.latchpoint.auth.model.UserMfa;
 import com.latchpoint.auth.repository.UserMfaRepository;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import org.springframework.stereotype.Service;
+import com.latchpoint.auth.exception.AuthExceptions.TooManyAttempts;
+import com.latchpoint.auth.repository.AuthEventRepository;
 
 import java.time.Instant;
 import java.util.Map;
@@ -24,11 +27,13 @@ public class MfaService {
     private final GoogleAuthenticator auth = new GoogleAuthenticator();
     private final EventLogService events;
     private final Map<String, PendingChallenge> challenges = new ConcurrentHashMap<>();
+    private final AuthEventRepository authEvents;
 
-    public MfaService(UserMfaRepository r, AppProperties p, EventLogService e) {
+    public MfaService(UserMfaRepository r, AppProperties p, EventLogService e, AuthEventRepository authEvents) {
         this.mfaRepo = r;
         this.props = p;
         this.events = e;
+        this.authEvents = authEvents;
     }
 
     public boolean isMfaActive(User user) {
@@ -42,25 +47,68 @@ public class MfaService {
         return challengeId;
     }
 
-    public User verify(String challengeId, String code) {
+    public synchronized User verify(String challengeId, String code) {
+        Instant now = Instant.now();
+
         PendingChallenge challenge = challenges.get(challengeId);
-        if (challenge == null || challenge.expiresAt().isBefore(Instant.now())) {
+
+        if (challenge == null) {
+            throw new InvalidMfa();
+        }
+
+        if (!challenge.expiresAt().isAfter(now)) {
             challenges.remove(challengeId);
             throw new InvalidMfa();
         }
 
-        UserMfa userMfa = mfaRepo.findByUser(challenge.user()).orElseThrow(InvalidMfa::new);
-        try {
-            int otp = Integer.parseInt(code);
-            if (!auth.authorize(userMfa.getSecret(), otp)) {
-                throw new InvalidMfa();
+        User user = challenge.user();
+        String username = user.getUsername();
+
+        Instant windowStart = now.minusSeconds(
+                props.getRateLimit().getBlockMinutes() * 60);
+
+        long failures = authEvents
+                .countByEventTypeAndDetailsAndTimestampAfter(
+                        "MFA_FAILED",
+                        "failed | user=" + username,
+                        windowStart);
+
+        if (failures >= props.getRateLimit().getMaxFailures()) {
+            challenges.remove(challengeId);
+            throw new TooManyAttempts();
+        }
+
+        UserMfa userMfa = mfaRepo.findByUser(user)
+                .filter(UserMfa::isActive)
+                .orElse(null);
+
+        if (userMfa == null) {
+            challenges.remove(challengeId);
+            throw new InvalidMfa();
+        }
+
+        boolean valid = false;
+
+        if (code != null && code.matches("[0-9]{6}")) {
+            valid = auth.authorize(
+                    userMfa.getSecret(),
+                    Integer.parseInt(code));
+        }
+
+        if (!valid) {
+            events.record("MFA_FAILED", "failed", username);
+
+            if (failures + 1 >= props.getRateLimit().getMaxFailures()) {
+                challenges.remove(challengeId);
+                throw new TooManyAttempts();
             }
-        } catch (NumberFormatException e) {
+
             throw new InvalidMfa();
         }
 
         challenges.remove(challengeId);
-        events.record("MFA_SUCCESS", "success", challenge.user().getUsername());
-        return challenge.user();
+        events.record("MFA_SUCCESS", "success", username);
+
+        return user;
     }
 }

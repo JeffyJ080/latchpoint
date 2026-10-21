@@ -102,8 +102,19 @@ app.post('/verify-mfa', async (req, res) => {
         }
         return res.json({ success: true, redirect: '/portal' });
     } catch (err) {
-        const status = err.response ? err.response.status : 500;
-        return res.status(status).json({ success: false, error: 'Invalid authentication code' });
+        const status = err.response ? err.response.status : 503;
+
+        const message =
+            status === 429
+                ? 'Too many failed attempts. Please try again later.'
+                : status === 401
+                    ? 'Invalid or expired authentication challenge. Please try again or sign in again.'
+                    : 'Authentication service unavailable';
+
+        return res.status(status).json({
+            success: false,
+            error: message,
+        });
     }
 });
 
