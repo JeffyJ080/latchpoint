@@ -48,17 +48,19 @@ public class AuthenticationService {
         }
 
         String token = sessions.createSession(u);
-        Instant exp = Instant.now().plusSeconds(
-                Math.min(props.getSession().getTimeoutMinutes(), props.getJwt().getExpiryMinutes()) * 60);
-        return LoginResponse.session(token, exp.toString());
+
+        return LoginResponse.session(
+                token,
+                sessions.validate(token).getExpiresAt().toString());
     }
 
     @Transactional
     public LoginResponse verifyMfa(String challengeId, String code) {
         User user = mfa.verify(challengeId, code);
         String token = sessions.createSession(user);
-        Instant exp = Instant.now().plusSeconds(
-                Math.min(props.getSession().getTimeoutMinutes(), props.getJwt().getExpiryMinutes()) * 60);
-        return LoginResponse.session(token, exp.toString());
+
+        return LoginResponse.session(
+                token,
+                sessions.validate(token).getExpiresAt().toString());
     }
 }
