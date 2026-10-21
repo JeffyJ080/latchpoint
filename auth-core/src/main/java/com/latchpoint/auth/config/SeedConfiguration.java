@@ -8,13 +8,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.latchpoint.auth.service.PasswordPolicyService;
 
 @Configuration
 public class SeedConfiguration {
 
     @Bean
     CommandLineRunner seed(UserRepository users, ConfigurationRepository configurations,
-            PasswordEncoder encoder, AppProperties properties) {
+            PasswordEncoder encoder, AppProperties properties, PasswordPolicyService passwordPolicy) {
         return args -> {
             if (!configurations.existsById(1L)) {
                 configurations.save(new FrameworkConfiguration());
@@ -24,6 +25,13 @@ public class SeedConfiguration {
                     || users.findByUsername(properties.getSeed().getUsername()).isPresent()) {
                 return;
             }
+            FrameworkConfiguration config = configurations.findById(1L)
+                    .orElseThrow(() -> new IllegalStateException("Security configuration missing"));
+
+            passwordPolicy.validate(
+                    properties.getSeed().getPassword(),
+                    config);
+
             User user = new User();
             user.setUsername(properties.getSeed().getUsername());
             user.setPasswordHash(encoder.encode(properties.getSeed().getPassword()));
