@@ -13,4 +13,6 @@ public interface SessionRepository extends JpaRepository<Session, String> {
     Optional<Session> findById(String id);
 
     Optional<Session> findByJti(String jti);
+
+    void deleteByUser(com.latchpoint.auth.model.User user);
 }
