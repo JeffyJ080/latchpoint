@@ -14,6 +14,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Middleware: Simulates legacy server-side session check
 async function requireAuth(req, res, next) {
+    res.setHeader('Cache-Control', 'no-store');
     const token = req.cookies['LATCHPOINT_SESSION'];
     if (!token) {
         return res.redirect('/?error=unauthorized');
