@@ -37,10 +37,7 @@ public class LegacyAuthController {
      * Accepts standard form-encoded data (HTML form POST) or JSON.
      * Translates input -> Auth Core JSON -> Sets secure session cookie on success.
      */
-    @PostMapping(value = "/login", consumes = {
-            MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            MediaType.APPLICATION_JSON_VALUE
-    })
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<LoginResponse> login(@Valid @ModelAttribute LegacyLoginForm form) {
         log.info("Received legacy login attempt for user: {}", form.username());
 
@@ -62,15 +59,18 @@ public class LegacyAuthController {
                 .body(response);
     }
 
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LoginResponse> loginJson(
+            @Valid @RequestBody LegacyLoginForm form) {
+        return login(form);
+    }
+
     /**
      * 2. Legacy MFA Verification
      * Accepts MFA challenge ID and code, verifies against Auth Core, and issues
      * session cookie.
      */
-    @PostMapping(value = "/verify-mfa", consumes = {
-            MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            MediaType.APPLICATION_JSON_VALUE
-    })
+    @PostMapping(value = "/verify-mfa", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<LoginResponse> verifyMfa(@Valid @ModelAttribute LegacyMfaForm form) {
         log.info("Received legacy MFA verification for challenge: {}", form.mfaChallengeId());
 
@@ -82,6 +82,12 @@ public class LegacyAuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, sessionCookie.toString())
                 .body(response);
+    }
+
+    @PostMapping(value = "/verify-mfa", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LoginResponse> verifyMfaJson(
+            @Valid @RequestBody LegacyMfaForm form) {
+        return verifyMfa(form);
     }
 
     /**
