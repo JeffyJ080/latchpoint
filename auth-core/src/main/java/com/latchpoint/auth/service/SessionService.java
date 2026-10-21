@@ -8,6 +8,7 @@ import com.latchpoint.auth.repository.SessionRepository;
 import com.latchpoint.auth.security.JwtService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.latchpoint.auth.repository.ConfigurationRepository;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -19,18 +20,25 @@ public class SessionService {
     private final JwtService jwt;
     private final AppProperties props;
     private final EventLogService events;
+    private final ConfigurationRepository configs;
 
-    public SessionService(SessionRepository s, JwtService j, AppProperties p, EventLogService e) {
+    public SessionService(SessionRepository s, JwtService j, AppProperties p, EventLogService e,
+            ConfigurationRepository configs) {
         this.sessions = s;
         this.jwt = j;
         this.props = p;
         this.events = e;
+        this.configs = configs;
     }
 
     @Transactional
     public String createSession(User user) {
         Instant now = Instant.now();
-        long sessionSeconds = props.getSession().getTimeoutMinutes() * 60;
+        long timeoutMinutes = configs.findById(1L)
+                .map(config -> (long) config.getSessionTimeoutMinutes())
+                .orElse(props.getSession().getTimeoutMinutes());
+
+        long sessionSeconds = timeoutMinutes * 60;
         long jwtSeconds = props.getJwt().getExpiryMinutes() * 60;
         Instant exp = now.plusSeconds(Math.min(sessionSeconds, jwtSeconds));
         String jti = UUID.randomUUID().toString();
