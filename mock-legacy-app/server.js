@@ -79,7 +79,9 @@ app.post('/login', async (req, res) => {
                 ? 'Invalid username or password'
                 : status === 429
                     ? 'Too many failed attempts. Please try again later.'
-                    : 'Authentication service unavailable';
+                    : status === 403
+                        ? 'Your password has expired. Contact the administrator to update it.'
+                        : 'Authentication service unavailable';
         return res.status(status).json({ success: false, error: msg });
     }
 });
@@ -109,7 +111,9 @@ app.post('/verify-mfa', async (req, res) => {
                 ? 'Too many failed attempts. Please try again later.'
                 : status === 401
                     ? 'Invalid or expired authentication challenge. Please try again or sign in again.'
-                    : 'Authentication service unavailable';
+                    : status === 403
+                        ? 'Your password has expired. Contact the administrator to update it.'
+                        : 'Authentication service unavailable';
 
         return res.status(status).json({
             success: false,

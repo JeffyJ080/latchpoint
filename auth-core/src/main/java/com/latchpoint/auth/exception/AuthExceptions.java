@@ -21,4 +21,7 @@ public final class AuthExceptions {
             super(m);
         }
     }
+
+    public static class PasswordExpired extends RuntimeException {
+    }
 }

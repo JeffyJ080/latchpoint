@@ -42,4 +42,10 @@ public class GlobalExceptionHandler {
     ResponseEntity<ErrorResponse> other() {
         return ResponseEntity.status(500).body(new ErrorResponse("internal_error"));
     }
+
+    @ExceptionHandler(AuthExceptions.PasswordExpired.class)
+    ResponseEntity<ErrorResponse> passwordExpired() {
+        return ResponseEntity.status(403)
+                .body(new ErrorResponse("password_expired"));
+    }
 }
