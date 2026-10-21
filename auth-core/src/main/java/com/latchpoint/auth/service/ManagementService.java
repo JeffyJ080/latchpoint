@@ -37,16 +37,60 @@ public class ManagementService {
                         : "connected");
     }
 
-    public EventsResponse eventList(String status, Instant from, Instant to) {
-        if (from == null)
-            from = Instant.now().minus(30, java.time.temporal.ChronoUnit.DAYS);
-        if (to == null)
-            to = Instant.now();
-        var list = events.findByTimestampBetweenOrderByTimestampDesc(from, to);
-        return new EventsResponse(list.stream()
-                .map(e -> new EventResponse(String.valueOf(e.getId()), e.getTimestamp().toString(),
-                        e.getDetails(), e.getEventType(), e.getIpAddress()))
-                .toList());
+    public EventsResponse eventList(
+            String status,
+            Instant from,
+            Instant to) {
+        String requestedStatus = status == null || status.isBlank()
+                ? null
+                : status.trim().toLowerCase(Locale.ROOT);
+
+        if (requestedStatus != null &&
+                !requestedStatus.equals("success") &&
+                !requestedStatus.equals("failed")) {
+            throw new InvalidConfiguration("invalid_event_status");
+        }
+
+        Instant end = to == null ? Instant.now() : to;
+        Instant start = from == null
+                ? end.minus(30, java.time.temporal.ChronoUnit.DAYS)
+                : from;
+
+        if (start.isAfter(end)) {
+            throw new InvalidConfiguration("invalid_date_range");
+        }
+
+        var results = events
+                .findByTimestampBetweenOrderByTimestampDesc(start, end)
+                .stream()
+                .map(event -> {
+                    String details = event.getDetails() == null
+                            ? ""
+                            : event.getDetails();
+
+                    String separator = " | user=";
+                    int position = details.indexOf(separator);
+
+                    String eventStatus = position >= 0
+                            ? details.substring(0, position)
+                            : details;
+
+                    String username = position >= 0
+                            ? details.substring(position + separator.length())
+                            : null;
+
+                    return new EventResponse(
+                            String.valueOf(event.getId()),
+                            event.getTimestamp().toString(),
+                            username,
+                            eventStatus,
+                            event.getIpAddress());
+                })
+                .filter(event -> requestedStatus == null ||
+                        requestedStatus.equals(event.status()))
+                .toList();
+
+        return new EventsResponse(results);
     }
 
     public ConfigResponse getConfig() {
