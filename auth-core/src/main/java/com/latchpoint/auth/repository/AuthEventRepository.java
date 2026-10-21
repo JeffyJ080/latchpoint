@@ -11,4 +11,6 @@ public interface AuthEventRepository extends JpaRepository<AuthEvent, Long> {
     List<AuthEvent> findByTimestampBetweenOrderByTimestampDesc(Instant from, Instant to);
 
     long countByEventTypeAndTimestampAfter(String eventType, Instant after);
+
+    long countByEventTypeAndDetailsAndTimestampAfter(String eventType, String details, Instant after);
 }

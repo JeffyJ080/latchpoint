@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.latchpoint.auth.repository.AuthEventRepository;
 
 import java.time.Instant;
 
@@ -21,19 +22,34 @@ public class AuthenticationService {
     private final MfaService mfa;
     private final EventLogService events;
     private final AppProperties props;
+    private final AuthEventRepository authEvents;
 
     public AuthenticationService(UserRepository u, PasswordEncoder e, SessionService s,
-            MfaService m, EventLogService ev, AppProperties p) {
+            MfaService m, EventLogService ev, AppProperties p, AuthEventRepository authEvents) {
         this.users = u;
         this.encoder = e;
         this.sessions = s;
         this.mfa = m;
         this.events = ev;
         this.props = p;
+        this.authEvents = authEvents;
     }
 
     @Transactional
     public LoginResponse login(String username, String password, HttpServletRequest req) {
+        Instant windowStart = Instant.now().minusSeconds(
+                props.getRateLimit().getBlockMinutes() * 60);
+
+        long failures = authEvents
+                .countByEventTypeAndDetailsAndTimestampAfter(
+                        "LOGIN_FAILED",
+                        "failed | user=" + username,
+                        windowStart);
+
+        if (failures >= props.getRateLimit().getMaxFailures()) {
+            throw new TooManyAttempts();
+        }
+        
         User u = users.findByUsername(username).orElse(null);
 
         if (u == null || !u.isEnabled() || !encoder.matches(password, u.getPasswordHash())) {
