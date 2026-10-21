@@ -88,7 +88,6 @@ CREATE TABLE IF NOT EXISTS configurations (
 -- Seed Data (Initial Admin, Demo User, & Default Configuration)
 -- =====================================================================
 -- 1. Initial Admin Account (username: admin / password: Admin123!)
--- BCrypt Hash: $2a$10$eA0y5cM4J6pYlWfB8N2F.OLhFkWZfPz4FvY/9L1E0wQn.R1sWwGGe
 INSERT INTO users (
         user_id,
         username,
@@ -100,14 +99,13 @@ INSERT INTO users (
 VALUES (
         1,
         'admin',
-        '$2a$10$eA0y5cM4J6pYlWfB8N2F.OLhFkWZfPz4FvY/9L1E0wQn.R1sWwGGe',
+        '$2a$10$cc4DhmuNDKOMEuR2/uhr3.CEGh81bKkIx9jxTX1IaPJdgeH41jlKy',
         'admin@latchpoint.local',
         'ADMIN',
         TRUE
     ) ON DUPLICATE KEY
 UPDATE user_id = user_id;
 -- 2. Initial Demo End User (username: demo_user / password: UserPassword123!)
--- BCrypt Hash: $2a$10$7R6v7t1tOQY1n8V3QhXJueyZq8yGf1F8U9f3uB9o5B1X.e6C9Y.Gq
 INSERT INTO users (
         user_id,
         username,
@@ -119,7 +117,7 @@ INSERT INTO users (
 VALUES (
         2,
         'demo_user',
-        '$2a$10$7R6v7t1tOQY1n8V3QhXJueyZq8yGf1F8U9f3uB9o5B1X.e6C9Y.Gq',
+        '$2a$10$cc4DhmuNDKOMEuR2/uhr3.ROCww6LfEEIlxitRO4jUfNnMsa/RMDq',
         'demo@business.local',
         'END_USER',
         TRUE
