@@ -41,13 +41,12 @@ public class AuthenticationService {
             throw new InvalidCredentials();
         }
 
-        events.record("LOGIN_SUCCESS", "success", username, req);
-
         if (mfa.isMfaActive(u)) {
             return LoginResponse.mfa(mfa.createChallenge(u));
         }
 
         String token = sessions.createSession(u);
+        events.record("LOGIN_SUCCESS", "success", username, req);
 
         return LoginResponse.session(
                 token,
@@ -58,6 +57,8 @@ public class AuthenticationService {
     public LoginResponse verifyMfa(String challengeId, String code) {
         User user = mfa.verify(challengeId, code);
         String token = sessions.createSession(user);
+
+        events.record("MFA_VERIFICATION_SUCCESS", "success", user.getUsername());
 
         return LoginResponse.session(
                 token,
