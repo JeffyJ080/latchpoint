@@ -94,7 +94,8 @@ INSERT INTO users (
         password,
         email,
         role,
-        is_active
+        is_active,
+        password_changed_at TIMESTAMP NULL DEFAULT NULL
     )
 VALUES (
         1,

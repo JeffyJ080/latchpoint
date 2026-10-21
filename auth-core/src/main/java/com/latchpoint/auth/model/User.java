@@ -40,6 +40,9 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "password_changed_at")
+    private Instant passwordChangedAt;
+
     public User() {
     }
 
@@ -55,6 +58,9 @@ public class User {
         Instant now = Instant.now();
         createdAt = now;
         updatedAt = now;
+        if (passwordChangedAt == null) {
+            passwordChangedAt = now;
+        }
         if (email == null || email.isBlank()) {
             email = username + "@latchpoint.local";
         }
@@ -82,6 +88,10 @@ public class User {
     }
 
     public void setPasswordHash(String passwordHash) {
+        if (!java.util.Objects.equals(this.passwordHash, passwordHash)) {
+            this.passwordChangedAt = Instant.now();
+        }
+
         this.passwordHash = passwordHash;
     }
 
@@ -111,5 +121,11 @@ public class User {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Instant getPasswordChangedAt() {
+        return passwordChangedAt != null
+                ? passwordChangedAt
+                : createdAt;
     }
 }
