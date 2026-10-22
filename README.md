@@ -13,6 +13,7 @@ Small businesses often run web applications with weak or poorly implemented auth
 Latchpoint is a standalone authentication service that businesses attach to their existing system rather than build themselves. Legacy systems integrate via a REST API, so the framework works regardless of what language the business's existing application is written in. The whole thing ships as Docker containers for consistent, dependency-free deployment on the business's own server, and is monitored/configured remotely via a mobile app.
 
 **Two problems, two solutions — not one:**
+
 - **Cross-language integration** → solved by exposing a REST API (any language can make an HTTP call)
 - **Consistent, dependency-free deployment** → solved by Docker
 
@@ -33,7 +34,7 @@ flowchart LR
 ## Tech Stack
 
 | Component | Tech |
-|---|---|
+| --- | --- |
 | Auth Core / API | Java, Spring Boot, Spring Security |
 | Database | MySQL |
 | MFA | TOTP library (e.g. `java-totp` / Google Authenticator-compatible) |
@@ -47,16 +48,48 @@ Self-hosted: each business runs their own container(s) on their own server, alon
 
 ## Getting Started
 
-```bash
-# Clone the repo
-git clone https://github.com/<org>/latchpoint.git
-cd latchpoint
+Requires Git, Docker and Docker Compose.
 
-# Spin up auth-core and adapter-layer
-docker-compose up --build
+```bash
+git clone https://github.com/JeffyJ080/latchpoint.git
+cd latchpoint
+cp .env.example .env
 ```
 
-Mobile app setup instructions to be added once the `mobile-app` folder has a working build.
+On Windows PowerShell, use `Copy-Item .env.example .env` instead of `cp`.
+
+Review `.env`, then start the backend and demonstration application:
+
+```bash
+docker compose up -d --build
+docker compose ps
+```
+
+The stack contains MySQL, Auth Core, Adapter Layer and the demonstration
+legacy application.
+
+Default addresses:
+
+- Auth Core health: <http://localhost:8080/actuator/health>
+- Adapter health: <http://localhost:8081/actuator/health>
+- Legacy application: <http://localhost:8082>
+
+Use the host ports configured in `.env`. For example,
+`AUTH_CORE_PORT=8085` makes Auth Core available at
+<http://localhost:8085> while its container continues using port 8080.
+
+Development accounts created on a fresh database:
+
+| Username | Password | Role |
+| --- | --- | --- |
+| admin | Admin123! | ADMIN |
+| demo_user | UserPassword123! | END_USER |
+
+These accounts are for local demonstration. Neither has MFA enrolled initially.
+SQL initialization runs only when the database volume is first created.
+
+See [Development Setup](docs/Dev%20Setup.md) and
+[API Contract](docs/Api%20contract.md) for configuration and endpoint details.
 
 ## Project Structure
 
@@ -74,6 +107,7 @@ latchpoint/
 ## Research Context
 
 This project supports research into secure authentication for small business web applications, including:
+
 - Common authentication vulnerabilities and how they expose data to risk
 - Comparison of modern vs. traditional authentication techniques
 - Effective prevention methods for authentication-related attacks
