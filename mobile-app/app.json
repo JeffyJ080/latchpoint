@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "MyApp",
-    "slug": "MyApp",
+    "name": "Latchpoint",
+    "slug": "Latchpoint",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "latchpoint",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
