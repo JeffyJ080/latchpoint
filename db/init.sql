@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    password_changed_at TIMESTAMP NULL DEFAULT NULL,
     INDEX idx_users_username (username),
     INDEX idx_users_role (role),
     INDEX idx_users_is_active (is_active)
@@ -94,8 +95,7 @@ INSERT INTO users (
         password,
         email,
         role,
-        is_active,
-        password_changed_at TIMESTAMP NULL DEFAULT NULL
+        is_active
     )
 VALUES (
         1,
