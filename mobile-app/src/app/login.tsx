@@ -110,13 +110,11 @@ export default function LoginScreen() {
 
       <Text style={styles.label}>Forgot Password?</Text>
 
-      <Link href="/signup" asChild>
-        <Pressable style={styles.Plainbutton}>
-          <Text style={styles.label}> Don't have an account?{' '}
-            <Text style={{ color: 'white' }}>Sign up</Text>
-          </Text>
-        </Pressable>
-      </Link>
+      {/* Future work: public account registration is not implemented. */}
+      <Text style={styles.label}>
+        Account registration — coming later.
+        {'\n'}Contact your administrator for access.
+      </Text>
 
     </View>
   );
