@@ -6,6 +6,8 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
 
 const C = {
   background: '#100e24',
@@ -39,6 +41,8 @@ export default function SectionPage({
   items,
 }: Props) {
   const router = useRouter();
+  const { logout } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -122,7 +126,18 @@ export default function SectionPage({
         {title === 'Settings' && (
           <Pressable
             style={styles.logoutButton}
-            onPress={() => router.replace('/login')}
+            disabled={loggingOut}
+            onPress={async () => {
+              setLoggingOut(true);
+
+              try {
+                await logout();
+              } catch {
+                // Local session is cleared even if the server is unavailable.
+              } finally {
+                setLoggingOut(false);
+              }
+            }}
             accessibilityRole="button"
           >
             <Text style={styles.logoutText}>Log out</Text>
@@ -144,7 +159,7 @@ const styles = StyleSheet.create({
     backgroundColor: C.background,
     minHeight: '100%',
   },
-  
+
   buttonContainer: {
     padding: 20,
     alignItems: 'flex-start',

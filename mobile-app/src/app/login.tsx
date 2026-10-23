@@ -1,51 +1,122 @@
 import { BlurView } from 'expo-blur';
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useLogin } from '../hooks/useLogin';
 
 export default function LoginScreen() {
+  const login = useLogin();
   return (
 
     <View style={styles.container}>
 
       <BlurView
-              intensity={50}
-              tint="dark"
-              style={styles.squareContainer}
-            />
+        intensity={50}
+        tint="dark"
+        style={styles.squareContainer}
+      />
 
-        <Text style={styles.texts}>Welcome back</Text>
-        <Text style={styles.texts}>Login to continue</Text>
+      <Text style={styles.texts}>Welcome back</Text>
+      <Text style={styles.texts}>Login to continue</Text>
 
-        <View style={styles.buttonContainer}>
+      <View style={styles.buttonContainer}>
+        <TextInput
+          style={styles.textarea}
+          placeholder="Enter your username"
+          placeholderTextColor="#232230"
+          value={login.username}
+          onChangeText={login.setUsername}
+          autoCapitalize="none"
+          autoCorrect={false}
+          editable={!login.busy && !login.challengeId}
+        />
+
+        <TextInput
+          style={styles.textarea}
+          placeholder="Enter your password"
+          placeholderTextColor="#232230"
+          secureTextEntry={true}
+          value={login.password}
+          onChangeText={login.setPassword}
+          editable={!login.busy && !login.challengeId}
+        />
+      </View>
+
+      {login.challengeId && (
+        <>
+          <Text style={{ color: 'white', marginTop: 12, marginBottom: 8 }}>
+            Enter your authenticator code
+          </Text>
+
           <TextInput
-            style={styles.textarea}
-            placeholder="Enter your email"
-            placeholderTextColor="#232230"
+            value={login.code}
+            onChangeText={(value) =>
+              login.setCode(value.replace(/[^0-9]/g, '').slice(0, 6))
+            }
+            placeholder="123456"
+            placeholderTextColor="#777"
+            keyboardType="number-pad"
+            maxLength={6}
+            editable={!login.busy}
+            style={{
+              backgroundColor: '#e5deff',
+              color: '#100e24',
+              padding: 14,
+              borderRadius: 8,
+              marginBottom: 12,
+            }}
           />
 
-          <TextInput
-            style={styles.textarea}
-            placeholder="Enter your password"
-            placeholderTextColor="#232230"
-            secureTextEntry={true}
-          />
-        </View>
-
-        <Link href="/dashboard" asChild>
-          <Pressable style={styles.button}>
-            <Text style={styles.buttonText}>LOGIN</Text>
-          </Pressable>
-        </Link>
-
-        <Text style={styles.label}>Forgot Password?</Text>
-
-        <Link href="/signup" asChild>
-          <Pressable style={styles.Plainbutton}>
-            <Text style= {styles.label}> Don't have an account?{' '}
-            <Text style={{ color: 'white' }}>Sign up</Text>
+          <Pressable
+            onPress={login.startAgain}
+            disabled={login.busy}
+            style={{ paddingVertical: 10 }}
+          >
+            <Text style={{ color: '#c6baf1', textAlign: 'center' }}>
+              Start again
             </Text>
           </Pressable>
-        </Link>
+        </>
+      )}
+
+      {!!login.error && (
+        <Text
+          accessibilityRole="alert"
+          style={{ color: '#ff9098', marginVertical: 12, textAlign: 'center' }}
+        >
+          {login.error}
+        </Text>
+      )}
+
+      <Pressable
+        onPress={() => void login.submit()}
+        disabled={login.busy}
+        style={{
+          backgroundColor: '#c6baf1',
+          borderRadius: 8,
+          padding: 14,
+          alignItems: 'center',
+          opacity: login.busy ? 0.6 : 1,
+          marginTop: 12,
+        }}
+      >
+        <Text style={{ color: '#292838', fontWeight: 'bold' }}>
+          {login.busy
+            ? 'PLEASE WAIT…'
+            : login.challengeId
+              ? 'VERIFY CODE'
+              : 'LOGIN'}
+        </Text>
+      </Pressable>
+
+      <Text style={styles.label}>Forgot Password?</Text>
+
+      <Link href="/signup" asChild>
+        <Pressable style={styles.Plainbutton}>
+          <Text style={styles.label}> Don't have an account?{' '}
+            <Text style={{ color: 'white' }}>Sign up</Text>
+          </Text>
+        </Pressable>
+      </Link>
 
     </View>
   );
@@ -114,7 +185,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 12,
-    width :'80%',
+    width: '80%',
   },
 
   buttonText: {
