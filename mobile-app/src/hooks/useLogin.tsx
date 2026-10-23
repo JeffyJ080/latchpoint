@@ -38,7 +38,7 @@ export function useLogin() {
                 {
                     method: 'POST',
                     body: challengeId
-                        ? { challengeId, code }
+                        ? { mfaChallengeId: challengeId, code }
                         : { username: username.trim(), password },
                 },
             );
