@@ -1,6 +1,4 @@
-
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import {
   Platform,
   Pressable,
@@ -10,6 +8,13 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { useManagement } from '../hooks/useManagement';
+import {
+  readable,
+  type AlertsData,
+  type DashboardData,
+} from '../services/management';
+import { useAuth } from '../context/AuthContext';
 
 type ChartDataset = {
   data: number[];
@@ -597,51 +602,65 @@ function ConnectedWebsites() {
 }
 
 export default function DashboardScreen() {
-  const { width } = useWindowDimensions();
-  const isWeb = Platform.OS === 'web';
-  const isWide = width >= 1000;
-  const isCompact = width < 600;
-
-  const [period, setPeriod] = useState<Period>('7D');
-  const [activeNav, setActiveNav] = useState('Overview');
-  const [selectedWebsite, setSelectedWebsite] = useState(0);
-
-  const chartWidth = Math.max(
-    290,
-    Math.min(width - (isWide ? 440 : 64), 680)
-  );
-
-  const selectedSite = WEBSITES[selectedWebsite];
+  const { session } = useAuth();
   const router = useRouter();
+  const { width } = useWindowDimensions();
 
-  const ROUTES: Record<string, string> = {
-    Overview: '/dashboard',
-    'Security Events': '/SecurityEvents',
-    Users: '/users',
-    Alerts: '/alerts',
-    Integrations: '/Integration',
-    Settings: '/Settings',
-  };
+  const dashboard = useManagement<DashboardData>('/management/dashboard');
+  const alerts = useManagement<AlertsData>('/management/alerts');
+
+  const data = dashboard.data;
+  const alertCount = alerts.data?.alerts.length;
+  const isWeb = Platform.OS === 'web';
+
+  const navigation = [
+    { label: 'Overview', icon: '◫', route: '/dashboard' },
+    { label: 'Security Events', icon: '◉', route: '/SecurityEvents' },
+    { label: 'Alerts', icon: '!', route: '/alerts' },
+    { label: 'Settings', icon: '⚙', route: '/Settings' },
+  ];
+
+  const metrics: MetricCardData[] = [
+    {
+      label: 'Successful Logins',
+      value: data ? String(data.recentLogins.success) : '—',
+      change: 'Last 24 hours',
+      icon: '✓',
+      color: COLORS.green,
+    },
+    {
+      label: 'Failed Logins',
+      value: data ? String(data.recentLogins.failed) : '—',
+      change: 'Last 24 hours',
+      icon: '!',
+      color: COLORS.red,
+    },
+    {
+      label: 'MFA Policy',
+      value: data ? (data.mfaEnabled ? 'On' : 'Off') : '—',
+      change: 'For enrolled accounts',
+      icon: '⬡',
+      color: COLORS.purple,
+    },
+    {
+      label: 'Active Alerts',
+      value: alertCount === undefined ? '—' : String(alertCount),
+      change: 'Current alert conditions',
+      icon: '!',
+      color: COLORS.orange,
+    },
+  ];
 
   const renderNavigation = (compact = false) =>
-  NAV_ITEMS.filter((item) =>
-    compact
-      ? ['Overview', 'Security Events', 'Alerts', 'Settings'].includes(
-          item.label
-        )
-      : true
-  ).map((item) => (
-    <NavigationItem
-      key={item.label}
-      item={item}
-      active={activeNav === item.label}
-      onPress={() => {
-        setActiveNav(item.label);
-        router.push(ROUTES[item.label] as any);
-      }}
-      compact={compact}
-    />
-  ));
+    navigation.map((item) => (
+      <NavigationItem
+        key={item.route}
+        item={item}
+        active={item.route === '/dashboard'}
+        onPress={() => router.push(item.route as any)}
+        compact={compact}
+      />
+    ));
 
   return (
     <View style={styles.app}>
@@ -649,7 +668,7 @@ export default function DashboardScreen() {
         <View style={styles.sidebar}>
           <View style={styles.brand}>
             <View style={styles.brandMark}>
-              <Text style={styles.brandShield}>🔒︎</Text>
+              <Text style={styles.brandShield}>⬡</Text>
             </View>
             <View>
               <Text style={styles.brandName}>LatchPoint</Text>
@@ -659,167 +678,157 @@ export default function DashboardScreen() {
 
           <Text style={styles.navHeading}>WORKSPACE</Text>
           {renderNavigation()}
-
-          <View style={styles.sidebarBottom}>
-            <View style={styles.sidebarStatusDot} />
-            <View>
-              <Text style={styles.sidebarStatusTitle}>Security services</Text>
-            </View>
-          </View>
         </View>
       )}
 
       <View style={styles.main}>
         <View style={styles.topBar}>
-          {!isWeb && (
-            <View style={styles.mobileBrand}>
-              <View style={styles.brandMark}>
-                <Text style={styles.brandShield}>⬡</Text>
-              </View>
-              <Text style={styles.brandName}>LatchPoint</Text>
-            </View>
-          )}
+          <Text style={styles.brandName}>LatchPoint</Text>
 
           <View style={styles.topBarRight}>
             <View style={styles.adminAvatar}>
-              <Text style={styles.adminAvatarText}>A</Text>
+              <Text style={styles.adminAvatarText}>
+                {session?.username.charAt(0).toUpperCase() || 'A'}
+              </Text>
             </View>
+
             <View>
-              <Text style={styles.adminName}>Admin</Text>
-              <Text style={styles.adminRole}>Workspace owner</Text>
+              <Text style={styles.adminName}>
+                {session?.username || 'Administrator'}
+              </Text>
+              <Text style={styles.adminRole}>Administrator</Text>
             </View>
+
+            <Pressable
+              disabled={dashboard.loading || alerts.loading}
+              onPress={() => {
+                dashboard.reload();
+                alerts.reload();
+              }}
+              style={{ padding: 10 }}
+            >
+              <Text style={{ color: COLORS.purple }}>
+                {dashboard.loading || alerts.loading ? 'Loading…' : 'Refresh'}
+              </Text>
+            </Pressable>
           </View>
         </View>
 
         <ScrollView
-          showsVerticalScrollIndicator={false}
           contentContainerStyle={[
             styles.content,
-            { paddingHorizontal: isCompact ? 16 : 28 },
+            { paddingHorizontal: width < 600 ? 16 : 28 },
           ]}
         >
-          <View style={styles.pageHeading}>
-            <View style={styles.pageHeadingText}>
-              <Text style={styles.eyebrow}>SECURITY OVERVIEW</Text>
-              <Text style={styles.pageTitle}>
-                {activeNav === 'Overview' ? 'Dashboard' : activeNav}
-              </Text>
-              <Text style={styles.pageSubtitle}>
-                Monitor and manage your connected application's security.
-              </Text>
-            </View>
+          <Text style={styles.eyebrow}>SECURITY OVERVIEW</Text>
+          <Text style={styles.pageTitle}>Dashboard</Text>
+          <Text style={[styles.pageSubtitle, { marginBottom: 22 }]}>
+            Authentication activity and framework status.
+          </Text>
 
-          </View>
+          {!!dashboard.error && (
+            <Text
+              accessibilityRole="alert"
+              style={{ color: COLORS.red, marginBottom: 16 }}
+            >
+              {dashboard.error}
+            </Text>
+          )}
 
-          <View style={styles.websiteSelector}>
-            <View style={styles.siteIdentity}>
-              <View style={styles.siteIconBox}>
-                <Text style={styles.siteIconText}>⌘</Text>
-              </View>
-              <View style={styles.siteText}>
-                <Text style={styles.siteLabel}>MONITORING WEBSITE</Text>
-                <Text style={styles.siteName}>{selectedSite.name}</Text>
-                <Text style={styles.siteDomain}>{selectedSite.domain}</Text>
-              </View>
-            </View>
-
-            <View style={styles.siteRight}>
-              <View style={styles.connectionBadge}>
-                <View
-                  style={[
-                    styles.statusDot,
-                    { backgroundColor: selectedSite.color },
-                  ]}
-                />
-                <Text style={styles.connectionText}>
-                  {selectedSite.status}
-                </Text>
-              </View>
-
-              <View style={styles.siteSwitchRow}>
-                {WEBSITES.map((site, index) => (
-                  <Pressable
-                    key={site.domain}
-                    onPress={() => setSelectedWebsite(index)}
-                    style={[
-                      styles.siteSwitch,
-                      selectedWebsite === index && styles.siteSwitchActive,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.siteSwitchText,
-                        selectedWebsite === index &&
-                        styles.siteSwitchTextActive,
-                      ]}
-                    >
-                      {index + 1}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-          </View>
-
-          <SectionHeading title="Security Overview" action="Last 30 days" />
+          {!!alerts.error && (
+            <Text
+              accessibilityRole="alert"
+              style={{ color: COLORS.red, marginBottom: 16 }}
+            >
+              Alerts: {alerts.error}
+            </Text>
+          )}
 
           <View style={styles.metricsGrid}>
-            {METRICS.map((item) => (
+            {metrics.map((item) => (
               <MetricCard key={item.label} item={item} />
             ))}
           </View>
 
-          <View style={styles.primaryGrid}>
-            <View style={styles.chartColumn}>
-              <DashboardChart
-                period={period}
-                setPeriod={setPeriod}
-                width={chartWidth}
-              />
-            </View>
+          {data && (
+            <View style={styles.panel}>
+              <SectionHeading title="Framework Status" />
 
-            <View style={styles.sideColumn}>
-              <View style={styles.panel}>
-                <SectionHeading title="Framework Status" action={undefined} />
-
-                <View style={styles.frameworkStatus}>
-                  <View style={styles.frameworkStatusIcon}>
-                    <Text style={styles.frameworkCheck}>✓</Text>
-                  </View>
-                  <Text style={styles.frameworkStatusTitle}>
-                    Integration overview
-                  </Text>
-                  <Text style={styles.frameworkStatusDescription}>
-                    The dashboard is using sample status data. Live service
-                    health has not been verified.
-                  </Text>
-                </View>
-
-                <View style={styles.frameworkRow}>
-                  <Text style={styles.frameworkLabel}>Authentication</Text>
-                  <Text style={styles.frameworkRow}></Text>
-                </View>
-                <View style={styles.frameworkRow}>
-                  <Text style={styles.frameworkLabel}>MFA</Text>
-                  <Text style={styles.frameworkRow}></Text>
-                </View>
-                <View style={styles.frameworkRow}>
-                  <Text style={styles.frameworkLabel}>Session security</Text>
-                  <Text style={styles.frameworkRow}></Text>
-                </View>
+              <View style={styles.frameworkRow}>
+                <Text style={styles.frameworkLabel}>Authentication</Text>
+                <Text
+                  style={{
+                    color:
+                      data.authStatus === 'secure'
+                        ? COLORS.green
+                        : COLORS.orange,
+                  }}
+                >
+                  {readable(data.authStatus)}
+                </Text>
               </View>
 
-              <SecurityAlerts />
-            </View>
-          </View>
+              <View style={styles.frameworkRow}>
+                <Text style={styles.frameworkLabel}>Legacy adapter</Text>
+                <Text
+                  style={{
+                    color:
+                      data.legacyConnectionStatus === 'connected'
+                        ? COLORS.green
+                        : COLORS.red,
+                  }}
+                >
+                  {readable(data.legacyConnectionStatus)}
+                </Text>
+              </View>
 
-          <View style={styles.bottomGrid}>
-            <View style={styles.bottomGridItem}>
-              <RecentEvents />
+              <View style={styles.frameworkRow}>
+                <Text style={styles.frameworkLabel}>MFA policy</Text>
+                <Text style={{ color: COLORS.white }}>
+                  {data.mfaEnabled ? 'Enabled' : 'Disabled'}
+                </Text>
+              </View>
             </View>
-            <View style={styles.bottomGridItem}>
-              <ConnectedWebsites />
+          )}
+
+          {alerts.data && (
+            <View style={styles.panel}>
+              <SectionHeading title="Current Alerts" />
+
+              {alerts.data.alerts.length === 0 ? (
+                <Text style={styles.pageSubtitle}>No active alerts.</Text>
+              ) : (
+                alerts.data.alerts.map((alert) => (
+                  <View key={alert.id} style={styles.frameworkRow}>
+                    <Text style={[styles.pageSubtitle, { flex: 1 }]}>
+                      {alert.message}
+                    </Text>
+                  </View>
+                ))
+              )}
+
+              <Pressable
+                onPress={() => router.push('/alerts')}
+                style={{ paddingVertical: 12 }}
+              >
+                <Text style={{ color: COLORS.purple }}>View alerts ›</Text>
+              </Pressable>
             </View>
+          )}
+
+          <View style={styles.panel}>
+            <SectionHeading title="Security Management" />
+
+            {navigation.slice(1).map((item) => (
+              <Pressable
+                key={item.route}
+                onPress={() => router.push(item.route as any)}
+                style={styles.frameworkRow}
+              >
+                <Text style={{ color: COLORS.white }}>{item.label}</Text>
+                <Text style={{ color: COLORS.purple }}>›</Text>
+              </Pressable>
+            ))}
           </View>
 
           <Text style={styles.footer}>
@@ -835,7 +844,6 @@ export default function DashboardScreen() {
       </View>
     </View>
   );
-
 }
 
 const styles = StyleSheet.create({

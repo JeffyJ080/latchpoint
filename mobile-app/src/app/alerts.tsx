@@ -1,30 +1,37 @@
-import SectionPage from '../components/SectionPage';
+import { Text } from 'react-native';
+import ManagementPage, {
+  Card,
+  ui,
+} from '../components/ManagementPage';
+import { useManagement } from '../hooks/useManagement';
+import {
+  formatTime,
+  readable,
+  type AlertsData,
+} from '../services/management';
 
 export default function AlertsScreen() {
+  const resource = useManagement<AlertsData>('/management/alerts');
+  const alerts = resource.data?.alerts ?? [];
+
   return (
-    <SectionPage
-      title="Security Alerts"
-      description="Review potential security issues that may require investigation."
-      items={[
-        {
-          title: 'Repeated authentication failures',
-          description: 'Review the frequency of failed logins.',
-          status: 'HIGH',
-          color: '#ff707a',
-        },
-        {
-          title: 'Unusual login activity',
-          description: 'Activity that differs from expected patterns.',
-          status: 'MEDIUM',
-          color: '#ffbd69',
-        },
-        {
-          title: 'Integration health check',
-          description: 'Verify that connected services are reachable.',
-          status: 'REVIEW',
-          color: '#a78bfa',
-        },
-      ]}
-    />
+    <ManagementPage title="Security Alerts" {...resource}>
+      {!resource.error && alerts.length === 0 && (
+        <Card title="No active alerts">
+          <Text style={ui.text}>
+            No alert conditions were reported by the backend.
+          </Text>
+        </Card>
+      )}
+
+      {alerts.map((alert) => (
+        <Card key={alert.id} title={readable(alert.type)}>
+          <Text style={ui.text}>{alert.message}</Text>
+          <Text style={[ui.text, { marginTop: 10 }]}>
+            Checked: {formatTime(alert.timestamp)}
+          </Text>
+        </Card>
+      ))}
+    </ManagementPage>
   );
 }
