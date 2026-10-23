@@ -13,6 +13,7 @@ import { ApiError, apiRequest } from '../services/api';
 type Session = {
     sessionToken: string;
     expiresAt: string;
+    username: string;
 };
 
 export type LoginResponse = {
@@ -89,15 +90,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     throw new Error('Expired session');
                 }
 
-                const result = await apiRequest<{ valid: boolean }>(
-                    '/session/validate',
-                    {
-                        method: 'POST',
-                        body: { sessionToken: saved.sessionToken },
-                    },
-                );
+                const result = await apiRequest<{
+                    valid: boolean;
+                    username: string | null;
+                }>('/session/validate', {
+                    method: 'POST',
+                    body: { sessionToken: saved.sessionToken },
+                });
 
-                if (!result.valid) throw new Error('Invalid session');
+                if (!result.valid || !result.username) {
+                    throw new Error('Invalid session');
+                }
+
+                saved.username = result.username;
 
                 // Management access confirms this is an administrator session.
                 await apiRequest('/management/dashboard', {
@@ -142,9 +147,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const next: Session = {
             sessionToken: response.sessionToken,
             expiresAt: response.expiresAt,
+            username: '',
         };
 
         try {
+            const validated = await apiRequest<{
+                valid: boolean;
+                username: string | null;
+            }>('/session/validate', {
+                method: 'POST',
+                body: { sessionToken: next.sessionToken },
+            });
+
+            if (!validated.valid || !validated.username) {
+                throw new Error('The session could not be validated.');
+            }
+
+            next.username = validated.username;
+
             await apiRequest('/management/dashboard', {
                 token: next.sessionToken,
             });
